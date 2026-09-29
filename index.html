@@ -269,8 +269,8 @@ main:has(.toast:not([hidden])) .follow{bottom:72px}
   <main>
     <section class="panel" id="panelQueue" role="tabpanel" aria-labelledby="tabQueue">
       <div class="bar" id="qBar">
-        <label class="btn" for="fileInput"><svg><use href="#i-note"/></svg>파일 추가</label>
-        <label class="btn" for="dirInput"><svg><use href="#i-folder"/></svg>폴더 추가</label>
+        <label class="btn" role="button" tabindex="0" for="fileInput"><svg><use href="#i-note"/></svg>파일 추가</label>
+        <label class="btn" role="button" tabindex="0" for="dirInput"><svg><use href="#i-folder"/></svg>폴더 추가</label>
         <span class="spacer"></span>
         <button class="btn ghost" id="selStart" type="button">선택</button>
       </div>
@@ -291,8 +291,8 @@ main:has(.toast:not([hidden])) .follow{bottom:72px}
           <h3>재생목록이 비었어요</h3>
           <p>음악 폴더를 통째로 추가하면, 곡과 이름이 같은 LRC·SRT 가사도 함께 불러와요.</p>
           <div class="btns">
-            <label class="btn primary" for="dirInput"><svg><use href="#i-folder"/></svg>폴더 추가</label>
-            <label class="btn" for="fileInput"><svg><use href="#i-note"/></svg>파일 추가</label>
+            <label class="btn primary" role="button" tabindex="0" for="dirInput"><svg><use href="#i-folder"/></svg>폴더 추가</label>
+            <label class="btn" role="button" tabindex="0" for="fileInput"><svg><use href="#i-note"/></svg>파일 추가</label>
           </div>
           <p class="fine">폴더 선택은 iOS 18.4 이상에서 돼요. 그보다 낮으면 파일 추가에서 곡과 가사 파일을 여러 개 함께 고르세요.</p>
         </div>
@@ -600,6 +600,7 @@ const state = {
 };
 let saved = store.get('session', null);
 const lyricIndex = new Map();   // lower-cased base name -> { lrc: [{dir, file}], srt: [...] }
+let lyricVer = 0;               // bumped on every registerLyric, so findLyrics can reuse its last answer
 const textCache = new WeakMap();
 
 const audio = $('audio');
@@ -637,10 +638,13 @@ function registerLyric(file, p) {
   if (!e) { e = { lrc: [], srt: [] }; lyricIndex.set(k, e); }
   e[kind] = e[kind].filter((x) => x.dir !== p.dir);
   e[kind].push({ dir: p.dir, file });
+  lyricVer++;
 }
 
+// every queue render asks this for every row, and the prefix scan below walks the whole index
 function findLyrics(it) {
   if (it.lyr) return it.lyr;
+  if (it.lyrMemo && it.lyrMemo.v === lyricVer) return it.lyrMemo.r;
   const b = it.base.toLowerCase();
   const pick = (arr) => (arr && arr.length ? (arr.find((x) => x.dir === it.dir) || arr[0]).file : null);
   const e = lyricIndex.get(b);
@@ -650,7 +654,8 @@ function findLyrics(it) {
       if (k.startsWith(b + '.')) { if (!lrc) lrc = pick(v.lrc); if (!srt) srt = pick(v.srt); }
     }
   }
-  return { lrc, srt };
+  it.lyrMemo = { v: lyricVer, r: { lrc, srt } };
+  return it.lyrMemo.r;
 }
 
 function getText(src) {
@@ -772,7 +777,7 @@ function pickAfterEnd() {
     case 'repeatOne': return 'same';
     case 'all': return neighbor(+1, false);
     case 'repeatAll': return neighbor(+1, true) || (c && !c.bad ? 'same' : null);
-    case 'shuffle': return shufflePick();
+    case 'shuffle': return shufflePick() || (c && !c.bad ? 'same' : null);
   }
   return null;
 }
@@ -796,11 +801,12 @@ audio.addEventListener('error', () => {
   c.bad = true;
   errorStreak++;
   renderQueue();
-  toast(`재생할 수 없는 파일이라 넘어갔어요: ${c.name}`);
+  let next = null;
   if (autoAdvance && errorStreak < state.queue.length && state.mode !== 'repeatOne' && state.mode !== 'one') {
-    const next = state.mode === 'shuffle' ? shufflePick() : neighbor(+1, state.mode === 'repeatAll');
-    if (next) go(next, { autoplay: true, auto: true });
+    next = state.mode === 'shuffle' ? shufflePick() : neighbor(+1, state.mode === 'repeatAll');
   }
+  toast(next ? `재생할 수 없는 파일이라 넘어갔어요: ${c.name}` : `재생할 수 없는 파일이에요: ${c.name}`);
+  if (next) go(next, { autoplay: true, auto: true });
 });
 
 audio.addEventListener('playing', () => { errorStreak = 0; });
@@ -1130,13 +1136,19 @@ function addFiles(list) {
   const files = Array.from(list || []);
   if (!files.length) return;
   const audios = [];
-  let lyrCount = 0;
+  const have = new Set(state.queue.map((x) => x.key));
+  let lyrCount = 0, dup = 0;
   for (const f of files) {
     const path = (f.webkitRelativePath || f.name).replace(/^\/+/, '');
     const p = splitName(path);
     if (!p.name || p.name.startsWith('.')) continue;          // skip ._song.mp3 and other hidden files
     if (LYRIC_EXT.has(p.ext)) { registerLyric(f, p); lyrCount++; }
-    else if (AUDIO_EXT.has(p.ext) || /^audio\//.test(f.type || '')) audios.push({ f, path });
+    else if (AUDIO_EXT.has(p.ext) || /^audio\//.test(f.type || '')) {
+      const key = path + '|' + f.size;                         // same key as makeItem; re-adding a folder only adds new songs
+      if (have.has(key)) { dup++; continue; }
+      have.add(key);
+      audios.push({ f, path });
+    }
   }
   audios.sort((a, b) => collator.compare(a.path, b.path));
   let items = audios.map((a) => makeItem(a.f, a.path));
@@ -1161,10 +1173,12 @@ function addFiles(list) {
   renderQueue();
   saveSession(true);
 
+  const skip = dup ? ` · 이미 있는 ${dup}곡은 건너뛰었어요` : '';
   if (restore && restore.cur) toast(`${items.length}곡 추가 · 지난번 위치(${fmt(restore.t)})부터 이어서 들을 수 있어요`);
-  else if (items.length && lyrCount) toast(`${items.length}곡과 가사 ${lyrCount}개를 추가했어요`);
-  else if (items.length) toast(`${items.length}곡을 추가했어요`);
-  else if (lyrCount) toast(`가사 ${lyrCount}개를 추가했어요. 이름이 같은 곡에 붙어요`);
+  else if (items.length && lyrCount) toast(`${items.length}곡과 가사 ${lyrCount}개를 추가했어요${skip}`);
+  else if (items.length) toast(`${items.length}곡을 추가했어요${skip}`);
+  else if (lyrCount) toast(`가사 ${lyrCount}개를 추가했어요${skip || '. 이름이 같은 곡에 붙어요'}`);
+  else if (dup) toast(`${dup}곡 모두 이미 목록에 있어요`);
   else toast('추가할 수 있는 음악이나 가사 파일이 없어요');
 }
 
@@ -1213,7 +1227,7 @@ function showLyrEmpty(kind, c) {
   const name = c ? esc(c.name) : '';
   const msgs = {
     none: ['재생 중인 곡이 없어요', '<p>재생목록에서 곡을 골라주세요.</p>'],
-    missing: [`‘${name}’에 맞는 가사가 없어요`, '<p>곡과 파일 이름이 같은 .lrc나 .srt를 찾아요. 가사 파일만 따로 추가해도 이미 있는 곡에 붙어요.</p><div class="btns"><label class="btn" for="fileInput"><svg><use href="#i-note"/></svg>가사 파일 추가</label></div>'],
+    missing: [`‘${name}’에 맞는 가사가 없어요`, '<p>곡과 파일 이름이 같은 .lrc나 .srt를 찾아요. 가사 파일만 따로 추가해도 이미 있는 곡에 붙어요.</p><div class="btns"><label class="btn" role="button" tabindex="0" for="fileInput"><svg><use href="#i-note"/></svg>가사 파일 추가</label></div>'],
     error: ['가사 파일을 읽지 못했어요', '<p>파일이 손상됐거나 텍스트 파일이 아닐 수 있어요.</p>'],
     blank: ['가사 파일에 보여줄 내용이 없어요', '<p>LRC는 [00:12.34], SRT는 00:00:12,340 --&gt; 00:00:15,000 같은 시간 표시가 있어야 해요.</p>'],
   };
@@ -1377,6 +1391,7 @@ function renderMode() {
   const m = MODES[state.mode];
   els.modeIcon.setAttribute('href', '#' + m.icon);
   els.modeLabel.textContent = m.label;
+  els.bMode.setAttribute('aria-label', `재생 모드: ${m.label}`);
   els.bMode.classList.toggle('on', state.mode !== 'all');
 }
 const rateText = (r) => (Number.isInteger(r) ? r.toFixed(1) : String(r)) + '×';
@@ -1389,6 +1404,7 @@ function setRate(r) {
 }
 function renderRate() {
   els.rateLabel.textContent = rateText(state.rate);
+  els.bRate.setAttribute('aria-label', `재생 속도: ${rateText(state.rate)}`);
   els.bRate.classList.toggle('on', state.rate !== 1);
 }
 function setSleep(v) {
@@ -1410,6 +1426,8 @@ function renderSleep() {
   const on = !!(state.sleepAt || state.sleepEnd);
   els.bSleep.classList.toggle('on', on);
   els.sleepLabel.textContent = state.sleepEnd ? '곡 끝나면' : state.sleepAt ? fmt(Math.ceil((state.sleepAt - Date.now()) / 1000)) : '수면 타이머';
+  // whole minutes only, so a screen reader is not handed a new name every second
+  els.bSleep.setAttribute('aria-label', state.sleepEnd ? '수면 타이머: 곡 끝나면' : state.sleepAt ? `수면 타이머: ${Math.ceil((state.sleepAt - Date.now()) / 60000)}분 남음` : '수면 타이머');
 }
 setInterval(checkSleep, 1000);
 
@@ -1576,7 +1594,7 @@ function saveSession(force) {
   saved = {
     items: real.map((x) => ({ k: x.key, nk: x.nkey })),
     cur: ci,
-    t: ci >= 0 ? Math.floor(audio.currentTime || 0) : 0,
+    t: ci >= 0 ? Math.floor(pendingSeek || audio.currentTime || 0) : 0,   // resume point not applied yet (iOS loads metadata only on play)
     name: ci >= 0 ? c.name : '',
     at: now,
   };
@@ -1594,6 +1612,12 @@ window.addEventListener('resize', () => { sizeSpacers(); placeFrame(els.lFrame.c
 document.addEventListener('keydown', (e) => {
   if (!els.sheetWrap.hidden) { if (e.key === 'Escape') closeSheet(); return; }
   const tag = (e.target && e.target.tagName) || '';
+  if (tag === 'LABEL' && (e.key === 'Enter' || e.key === ' ')) {   // the file-add labels stand in for hidden inputs
+    const inp = $(e.target.htmlFor);
+    if (inp) { e.preventDefault(); inp.click(); }
+    return;
+  }
+  if (e.altKey || e.ctrlKey || e.metaKey) return;                   // leave browser shortcuts like Alt+← alone
   if (/INPUT|TEXTAREA|SELECT/.test(tag) || e.target === els.seek) return;
   if (e.key === ' ' && tag !== 'BUTTON') { e.preventDefault(); togglePlay(); }
   else if (e.key === 'ArrowLeft') skipBy(-10);
