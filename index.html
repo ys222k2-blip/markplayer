@@ -223,6 +223,19 @@ main:has(.toast:not([hidden])) .follow{bottom:72px}
 .switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--knob);box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s}
 .switch[aria-checked="true"]{background:var(--accent)}
 .switch[aria-checked="true"]::after{transform:translateX(20px)}
+/* subtitle repository sheet */
+.back{display:inline-flex;align-items:center;gap:2px;height:32px;margin:-6px 0 6px -6px;padding:0 6px;border-radius:8px;font-size:13.5px;font-weight:600;color:var(--accent)}
+.back svg{width:18px;height:18px}
+.stat{margin:0 0 4px;padding:10px 12px;border-radius:10px;background:var(--sunk);font-size:13px;line-height:1.55;color:var(--muted);overflow-wrap:anywhere}
+.stat b{color:var(--fg);font-weight:600}
+.stat.err,.stat.err b{color:var(--danger)}
+.field{display:flex;flex-direction:column;gap:5px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.field input{width:100%;height:44px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg);font:inherit;font-size:16px;font-weight:400}
+.field input::placeholder{color:var(--faint)}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px}
+.opt.nav{min-height:52px;margin:0 -10px}
+.opt .chev{width:18px;height:18px;flex:none;color:var(--faint)}
+.opt b{overflow-wrap:anywhere}
 
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{transition:none!important;animation:none!important}
@@ -253,6 +266,9 @@ main:has(.toast:not([hidden])) .follow{bottom:72px}
     <symbol id="i-gauge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14l4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></symbol>
     <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
     <symbol id="i-sliders" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol>
+    <symbol id="i-cloud" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></symbol>
     <symbol id="i-locate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></symbol>
   </defs>
 </svg>
@@ -384,6 +400,7 @@ const uid = () => 'q' + (++seq);
 
 const AUDIO_EXT = new Set(['mp3', 'm4a', 'm4b', 'aac', 'wav', 'aif', 'aiff', 'caf', 'flac', 'alac', 'ogg', 'oga', 'opus', 'wma', 'ape', 'mp4', 'webm', 'mka']);
 const LYRIC_EXT = new Set(['lrc', 'srt', 'vtt']);
+const JA_TAG = /^(ja|jp|jpn)$/i, KO_TAG = /^(ko|kr|kor)$/i;   // language tag in song.ja.srt, song.ko.srt
 
 function splitName(path) {
   const parts = path.split('/');
@@ -593,6 +610,7 @@ const state = {
   align: store.get('align', 'center') === 'left' ? 'left' : 'center',
   autoReturn: store.get('autoReturn', true) !== false,
   keepAwake: !!store.get('keepAwake', false),
+  jaMode: store.get('jaMode', 'ko') === 'both' ? 'both' : 'ko',
   offsets: store.get('offsets', {}) || {},
   select: false, selected: new Set(),
   sleepAt: 0, sleepEnd: false,
@@ -601,7 +619,7 @@ const state = {
 let saved = store.get('session', null);
 const lyricIndex = new Map();   // lower-cased base name -> { lrc: [{dir, file}], srt: [...] }
 let lyricVer = 0;               // bumped on every registerLyric, so findLyrics can reuse its last answer
-const textCache = new WeakMap();
+let textCache = new WeakMap();
 
 const audio = $('audio');
 const els = {
@@ -648,21 +666,309 @@ function findLyrics(it) {
   const b = it.base.toLowerCase();
   const pick = (arr) => (arr && arr.length ? (arr.find((x) => x.dir === it.dir) || arr[0]).file : null);
   const e = lyricIndex.get(b);
-  let lrc = pick(e && e.lrc), srt = pick(e && e.srt);
-  if (!lrc || !srt) {
-    for (const [k, v] of lyricIndex) {   // song.ko.srt, song.en.lrc …
-      if (k.startsWith(b + '.')) { if (!lrc) lrc = pick(v.lrc); if (!srt) srt = pick(v.srt); }
-    }
+  let lrc = pick(e && e.lrc), srt = pick(e && e.srt), ja = null;
+  // song.ko.srt, song.en.lrc …: Korean first; song.ja.* is kept for the Japanese line under it
+  const more = [];
+  for (const [k, v] of lyricIndex) {
+    if (!k.startsWith(b + '.')) continue;
+    const tag = k.slice(b.length + 1);
+    if (JA_TAG.test(tag)) ja = ja || pick(v.srt) || pick(v.lrc);
+    else more.push([KO_TAG.test(tag) ? 0 : 1, v]);
   }
-  it.lyrMemo = { v: lyricVer, r: { lrc, srt } };
+  more.sort((x, y) => x[0] - y[0]);
+  for (const [, v] of more) { if (!lrc) lrc = pick(v.lrc); if (!srt) srt = pick(v.srt); }
+  const r = it.repo && repo.cfg.on ? it.repo : null;   // the repository's files win over the ones next to the song
+  if (r) { lrc = repoSrc(r.lrc) || lrc; srt = repoSrc(r.srt) || srt; ja = repoSrc(r.ja) || ja; }
+  if (!lrc && !srt && ja) { srt = ja; ja = null; }       // Japanese is all there is
+  it.lyrMemo = { v: lyricVer, r: { lrc, srt, ja, repo: !!r } };
   return it.lyrMemo.r;
 }
 
 function getText(src) {
   if (typeof src === 'string') return Promise.resolve(src);
   let p = textCache.get(src);
-  if (!p) { p = readText(src); textCache.set(src, p); }
+  if (!p) {
+    p = src.repoSha ? repoText(src.repoSha) : readText(src);
+    p.catch(() => { if (textCache.get(src) === p) textCache.delete(src); });   // try again next time
+    textCache.set(src, p);
+  }
   return p;
+}
+
+/* ---------- subtitle repository ----------
+   Subtitles kept in a private GitHub repository (subtitles/<RJ code_title>/<track>.lrc · .ko.srt · .ja.srt),
+   read with a read-only token entered once in the settings. The file list comes from one tree request and is kept;
+   a matched song's files are fetched right after the song is added and kept by blob sha, so they also work offline. */
+const repo = {
+  cfg: Object.assign({ name: '', token: '', branch: '', on: true }, store.get('repo', null) || {}),
+  picks: store.get('repoPick', {}) || {},   // RJ code (or local folder) -> repository folder, when several fit
+  tree: null, idx: null, checkedAt: 0,
+  status: 'idle', msg: '', dl: null,
+  loading: null, syncing: null, fetching: Promise.resolve(),
+};
+let repoDraft = {};             // what is typed in the settings, until it is connected
+const repoSrcs = new Map();     // blob sha -> the one source object getText caches by
+const blobJobs = new Map();
+const saveRepoCfg = () => store.set('repo', repo.cfg);
+const repoReady = () => !!(repo.cfg.on && repo.cfg.token && repo.cfg.name);
+
+// IndexedDB key-value store for the file list ('tree') and fetched files ('b:<sha>'); memory only if it is unavailable
+const kv = (() => {
+  const mem = new Map();
+  let dbp = null;
+  const open = () => dbp || (dbp = new Promise((res, rej) => {
+    const r = indexedDB.open('mark-subs', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('kv');
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  }));
+  const run = (mode, fn) => open().then((db) => new Promise((res, rej) => {
+    const t = db.transaction('kv', mode), q = fn(t.objectStore('kv'));
+    t.oncomplete = () => res(q.result);
+    t.onerror = t.onabort = () => rej(t.error);
+  }));
+  return {
+    async get(k) {
+      if (mem.has(k)) return mem.get(k);
+      try { const v = await run('readonly', (s) => s.get(k)); if (v !== undefined) mem.set(k, v); return v; } catch (e) { return undefined; }
+    },
+    async set(k, v) { mem.set(k, v); try { await run('readwrite', (s) => s.put(v, k)); } catch (e) { /* memory only */ } },
+    async clear() { mem.clear(); try { await run('readwrite', (s) => s.clear()); } catch (e) { /* ignore */ } },
+  };
+})();
+
+const rp = (name = repo.cfg.name) => '/repos/' + name.split('/').map(encodeURIComponent).join('/');
+async function gh(path, token) {
+  let r;
+  try {
+    r = await fetch('https://api.github.com' + path, { headers: { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + token }, cache: 'no-store' });
+  } catch (e) { throw new Error('GitHub에 연결하지 못했어요. 인터넷 연결을 확인하세요'); }
+  if (r.ok) return r.json();
+  const s = r.status, limited = s === 429 || (s === 403 && r.headers.get('x-ratelimit-remaining') === '0');
+  throw new Error(s === 401 ? '토큰이 맞지 않거나 만료됐어요'
+    : s === 404 ? '저장소를 찾지 못했어요. 이름과, 토큰에 이 저장소를 골라 두었는지 확인하세요'
+    : limited ? 'GitHub 요청 한도를 넘었어요. 잠시 뒤에 다시 해 보세요'
+    : s === 403 ? '토큰에 이 저장소의 Contents 읽기 권한이 없어요'
+    : `GitHub 오류(${s})`);
+}
+
+// NFKC + lower case, so a name typed on a Mac (NFD kana), full-width ～？ and case all compare equal
+const normKey = (s) => String(s).normalize('NFKC').toLowerCase().replace(/\s+/g, ' ').trim();
+const codeOf = (s) => { const m = /(?:^|[^a-z0-9])(rj\d{6}(?:\d{2})?)(?!\d)/.exec(normKey(s)); return m ? m[1] : ''; };
+// 'tr01_…', '01_…', '1.…', '00. …', 'RJ01234567_03' -> the track number
+function trackNum(s) {
+  const m = /^(?:tr(?:ack)?)?[\s_.#-]*(\d{1,3})(?!\d)/.exec(normKey(s).replace(/rj\d{6}(?:\d{2})?/g, '').replace(/^[\s_.-]+/, ''));
+  return m ? +m[1] : null;
+}
+
+// works: repository folder -> its tracks by normalized name · byCode: RJ code -> folders · byKey: track name -> [folder, track]
+function buildRepoIndex(files) {
+  if (files.some(([p]) => p.startsWith('subtitles/'))) files = files.filter(([p]) => p.startsWith('subtitles/'));
+  const works = new Map(), byCode = new Map(), byKey = new Map();
+  for (const [path, sha] of files) {
+    const p = splitName(path);
+    let base = p.base, lang = '';
+    const lm = /\.([a-z]{2,3})$/i.exec(base);
+    if (lm && (JA_TAG.test(lm[1]) || KO_TAG.test(lm[1]))) { lang = JA_TAG.test(lm[1]) ? 'ja' : 'ko'; base = base.slice(0, -lm[0].length); }
+    if (!base || !LYRIC_EXT.has(p.ext)) continue;
+    let w = works.get(p.dir);
+    if (!w) {
+      const name = p.dir.split('/').pop() || p.dir;
+      const words = normKey(name).split(/[\s[\]【】()「」『』_・,、]+/).filter((x) => x.length >= 2);
+      w = { dir: p.dir, name, code: codeOf(name), words, tracks: new Map(), nums: new Map() };
+      works.set(p.dir, w);
+    }
+    const key = normKey(base);
+    let tr = w.tracks.get(key);
+    if (!tr) { tr = { name: base, lrc: null, srt: null, ja: null }; w.tracks.set(key, tr); }
+    const f = { sha, ext: p.ext };
+    if (lang === 'ja') { if (!tr.ja || p.ext !== 'lrc') tr.ja = f; }
+    else if (p.ext === 'lrc') tr.lrc = f;
+    else if (!tr.srt || lang === 'ko') tr.srt = f;
+  }
+  for (const w of works.values()) {
+    if (w.code) { if (!byCode.has(w.code)) byCode.set(w.code, []); byCode.get(w.code).push(w); }
+    for (const [key, tr] of w.tracks) {
+      if (!byKey.has(key)) byKey.set(key, []);
+      byKey.get(key).push([w, tr]);
+      const n = trackNum(tr.name);
+      if (n != null) { if (!w.nums.has(n)) w.nums.set(n, []); w.nums.get(n).push(tr); }
+    }
+  }
+  return { works, byCode, byKey };
+}
+
+// A song's RJ code (its file name first, then its folders from the inside out) picks the repository folders,
+// where the track is found by name, or by track number when that is unique. Without a code: a track of the
+// same name in a folder named after the voice actor, else anywhere in the repository.
+function matchRepo(list) {
+  const idx = repo.idx, found = new Map(), score = new Map();
+  for (const it of list) {
+    it.repo = null;
+    if (it.sample || !idx) continue;
+    const segs = (it.dir ? it.dir.split('/') : []).concat(it.base).map(normKey);
+    let code = '';
+    for (let i = segs.length - 1; i >= 0 && !code; i--) code = codeOf(segs[i]);
+    const key = normKey(it.base);
+    let cands = [];
+    if (code) {
+      const ws = idx.byCode.get(code) || [];
+      for (const w of ws) { const tr = w.tracks.get(key); if (tr) cands.push({ w, tr, how: 'code' }); }
+      const n = cands.length ? null : trackNum(it.base);
+      if (n != null) for (const w of ws) { const t = w.nums.get(n); if (t && t.length === 1) cands.push({ w, tr: t[0], how: 'num' }); }
+    } else {
+      const hits = idx.byKey.get(key) || [];
+      const actor = hits.filter(([w]) => !w.code && w.words.some((x) => segs.some((s) => s.includes(x))));
+      cands = (actor.length ? actor : hits).map(([w, tr]) => ({ w, tr, how: actor.length ? 'actor' : 'name' }));
+    }
+    if (!cands.length) continue;
+    const group = code || '@' + it.dir;   // a choice between folders holds for the whole work
+    found.set(it, { cands, group });
+    for (const w of new Set(cands.map((c) => c.w))) score.set(group + '\n' + w.dir, (score.get(group + '\n' + w.dir) || 0) + 1);
+  }
+  for (const [it, { cands, group }] of found) {
+    const chosen = repo.picks[group];
+    const sc = (c) => score.get(group + '\n' + c.w.dir) || 0, numbered = (c) => /_\d+$/.test(c.w.name);
+    // the folder picked in the settings, then the one most of this folder's songs fit, then 'work' over 'work_2'
+    cands.sort((a, b) => (b.w.dir === chosen) - (a.w.dir === chosen) || sc(b) - sc(a)
+      || numbered(a) - numbered(b) || a.w.name.length - b.w.name.length);
+    const top = cands[0], next = cands.find((c) => c.w !== top.w);
+    // the same file name in two different works and nothing to tell them apart: better no subtitles than wrong ones
+    if (top.how === 'name' && next && sc(next) === sc(top) && (!top.w.code || next.w.code !== top.w.code) && top.w.dir !== chosen) continue;
+    const alts = [];
+    for (const c of cands) if (!alts.some((a) => a.dir === c.w.dir)) alts.push({ dir: c.w.dir, name: c.w.name });
+    alts.sort((a, b) => collator.compare(a.name, b.name));   // same order in the settings whichever is picked
+    it.repo = { dir: top.w.dir, name: top.w.name, how: top.how, group, alts, lrc: top.tr.lrc, srt: top.tr.srt, ja: top.tr.ja };
+  }
+  lyricVer++;
+}
+
+const repoSig = (it) => (it && it.repo && repo.cfg.on ? [it.repo.lrc, it.repo.srt, it.repo.ja].map((f) => (f ? f.sha : '')).join() : '');
+function repoRematch() {
+  const c = cur(), before = repoSig(c);
+  matchRepo(state.queue);
+  renderQueue();
+  if (repoSig(c) !== before) loadLyrics();
+  paintRepoStatus();
+}
+
+function repoSrc(f) {
+  if (!f) return null;
+  let s = repoSrcs.get(f.sha);
+  if (!s) { s = { repoSha: f.sha, ext: f.ext }; repoSrcs.set(f.sha, s); }
+  return s;
+}
+
+function repoText(sha) {
+  let p = blobJobs.get(sha);
+  if (p) return p;
+  p = (async () => {
+    const hit = await kv.get('b:' + sha);
+    if (typeof hit === 'string') return hit;
+    if (!repo.cfg.token) throw new Error('자막 저장소가 연결되어 있지 않아요');
+    const j = await gh(`${rp()}/git/blobs/${sha}`, repo.cfg.token);
+    const bin = atob(String(j.content || '').replace(/\s+/g, ''));
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    const text = await readText(new Blob([bytes]));
+    await kv.set('b:' + sha, text);
+    return text;
+  })();
+  blobJobs.set(sha, p);
+  p.then(() => blobJobs.delete(sha), () => blobJobs.delete(sha));
+  return p;
+}
+
+function applyTree(t) {
+  repo.tree = t;
+  repo.idx = buildRepoIndex(t.files);
+  repo.checkedAt = t.at || 0;
+}
+async function repoLoadCached() {
+  const t = await kv.get('tree');
+  if (t && t.repo === repo.cfg.name && !repo.idx) {
+    applyTree(t);
+    if (state.queue.some((x) => !x.sample)) repoRematch();
+  }
+}
+
+// One small request for the branch head; the file list is fetched again only when the head has moved.
+function repoSync(force) {
+  if (repo.syncing) return repo.syncing;
+  repo.syncing = (async () => {
+    try {
+      await repo.loading;
+      if (!repo.cfg.token) return false;
+      if (!force && repo.idx && Date.now() - repo.checkedAt < 10 * 60000) return false;
+      const { name, token } = repo.cfg;
+      setRepoStatus('busy');
+      const branch = repo.cfg.branch || (await gh(rp(name), token)).default_branch || 'main';
+      const head = await gh(`${rp(name)}/branches/${encodeURIComponent(branch)}`, token);
+      let changed = false;
+      if (!repo.tree || repo.tree.commit !== head.commit.sha) {
+        const t = await gh(`${rp(name)}/git/trees/${head.commit.commit.tree.sha}?recursive=1`, token);
+        if (repo.cfg.name !== name) return false;   // switched to another repository meanwhile
+        const files = t.tree.filter((x) => x.type === 'blob' && /\.(lrc|srt|vtt)$/i.test(x.path)).map((x) => [x.path, x.sha]);
+        applyTree({ repo: name, commit: head.commit.sha, at: Date.now(), files });
+        changed = true;
+      } else {
+        repo.tree.at = repo.checkedAt = Date.now();
+      }
+      if (repo.cfg.name !== name) return false;
+      repo.cfg.branch = branch;
+      saveRepoCfg();
+      kv.set('tree', repo.tree);
+      setRepoStatus('ok');
+      return changed;
+    } catch (e) {
+      setRepoStatus('err', e.message);
+      return false;
+    } finally {
+      repo.syncing = null;
+    }
+  })();
+  return repo.syncing;
+}
+
+// Right after songs are added: fetch every matched song's files, the current song first, four at a time.
+function repoPrefetch() {
+  repo.fetching = repo.fetching.then(async () => {
+    if (!repoReady()) return;
+    const c = cur(), shas = new Set();
+    const list = state.queue.filter((x) => x.repo).sort((a, b) => (b === c) - (a === c));
+    for (const it of list) for (const f of [it.repo.lrc, it.repo.srt, it.repo.ja]) if (f) shas.add(f.sha);
+    const todo = [];
+    for (const s of shas) if (typeof (await kv.get('b:' + s)) !== 'string') todo.push(s);
+    if (!todo.length) return;
+    repo.dl = { done: 0, total: todo.length, failed: 0 };
+    paintRepoStatus();
+    let i = 0;
+    const worker = async () => {
+      while (i < todo.length) {
+        const s = todo[i++];
+        try { await repoText(s); } catch (e) { repo.dl.failed++; }
+        repo.dl.done++;
+        paintRepoStatus();
+      }
+    };
+    await Promise.all([worker(), worker(), worker(), worker()]);
+    const failed = repo.dl.failed;
+    repo.dl = null;
+    paintRepoStatus();
+    if (failed) toast(`저장소 자막 ${failed}개를 받지 못했어요. 곡을 재생할 때 다시 받아요`);
+  }).catch(() => { repo.dl = null; });
+}
+
+// after adding songs: the list was matched against the kept file list already; check for a newer one, then fetch
+async function repoAfterAdd() {
+  if (!repoReady()) return;
+  const count = () => state.queue.filter((x) => x.repo).length, before = count();
+  if (await repoSync(false)) {
+    repoRematch();
+    const n = count();
+    if (n !== before) toast(n ? `저장소에서 ${n}곡의 자막을 찾았어요` : '저장소에 이 곡들의 자막이 없어요');
+  } else if (repo.status === 'err') toast(`자막 저장소: ${repo.msg}`);   // e.g. an expired token
+  repoPrefetch();
 }
 
 /* ---------- playback ---------- */
@@ -947,6 +1253,7 @@ function rowHTML(it) {
   const chips = [];
   if (it.sample) chips.push('<span class="chip ex">예시</span>');
   if (it.ext) chips.push(`<span class="chip">${esc(it.ext.toUpperCase())}</span>`);
+  if (ly.repo) chips.push('<span class="chip ly">저장소</span>');
   if (ly.lrc) chips.push('<span class="chip ly">LRC</span>');
   if (ly.srt) chips.push('<span class="chip ly">SRT</span>');
   if (it.bad) chips.push('<span class="chip warn">재생 불가</span>');
@@ -1166,6 +1473,7 @@ function addFiles(list) {
     }
   }
   state.queue.push(...items);
+  if (items.length) matchRepo(state.queue);   // against the kept file list; repoAfterAdd checks for a newer one
 
   if (restore && restore.cur) loadItem(restore.cur, { startAt: restore.t });
   else if (!cur() && items.length) loadItem(items[0]);
@@ -1174,12 +1482,15 @@ function addFiles(list) {
   saveSession(true);
 
   const skip = dup ? ` · 이미 있는 ${dup}곡은 건너뛰었어요` : '';
-  if (restore && restore.cur) toast(`${items.length}곡 추가 · 지난번 위치(${fmt(restore.t)})부터 이어서 들을 수 있어요`);
-  else if (items.length && lyrCount) toast(`${items.length}곡과 가사 ${lyrCount}개를 추가했어요${skip}`);
-  else if (items.length) toast(`${items.length}곡을 추가했어요${skip}`);
+  const rk = repo.cfg.on ? items.filter((x) => x.repo).length : 0;
+  const rs = rk ? ` · 저장소 자막 ${rk}곡` : '';
+  if (restore && restore.cur) toast(`${items.length}곡 추가${rs} · 지난번 위치(${fmt(restore.t)})부터 이어서 들을 수 있어요`);
+  else if (items.length && lyrCount) toast(`${items.length}곡과 가사 ${lyrCount}개를 추가했어요${rs}${skip}`);
+  else if (items.length) toast(`${items.length}곡을 추가했어요${rs}${skip}`);
   else if (lyrCount) toast(`가사 ${lyrCount}개를 추가했어요${skip || '. 이름이 같은 곡에 붙어요'}`);
   else if (dup) toast(`${dup}곡 모두 이미 목록에 있어요`);
   else toast('추가할 수 있는 음악이나 가사 파일이 없어요');
+  if (items.length) repoAfterAdd();
 }
 
 for (const inp of [els.fileInput, els.dirInput]) {
@@ -1203,12 +1514,29 @@ async function loadLyrics() {
   if (!kind) { showLyrEmpty('missing', c); return; }
   let text;
   try { text = await getText(av[kind]); }
-  catch (e) { if (token === lyr.token) showLyrEmpty('error', c); return; }
+  catch (e) { if (token === lyr.token) showLyrEmpty(av[kind].repoSha ? 'repoError' : 'error', c); return; }
   if (token !== lyr.token) return;
   const data = kind === 'lrc' ? parseLRC(text) : parseSRT(text);
   if (!data.groups.length) { showLyrEmpty('blank', c); return; }
+  if (state.jaMode === 'both' && av.ja && av.ja !== av[kind] && data.timed) {
+    try {
+      const jt = await getText(av.ja);
+      if (token !== lyr.token) return;
+      addJapanese(data, /-->/.test(jt) ? parseSRT(jt) : parseLRC(jt));
+    } catch (e) { /* Korean alone */ }
+  }
   lyr.data = data;
   renderLyricLines();
+}
+
+// each Korean line gets the Japanese line that starts at the same moment (both come from one subtitle build)
+function addJapanese(d, j) {
+  if (!j.timed) return;
+  let p = 0;
+  for (const g of d.groups) {
+    while (p < j.groups.length && j.groups[p].t < g.t - 0.6) p++;
+    if (p < j.groups.length && Math.abs(j.groups[p].t - g.t) <= 0.6) g.ja = j.groups[p++].lines.filter(Boolean);
+  }
 }
 
 function renderLyrBar() {
@@ -1227,8 +1555,9 @@ function showLyrEmpty(kind, c) {
   const name = c ? esc(c.name) : '';
   const msgs = {
     none: ['재생 중인 곡이 없어요', '<p>재생목록에서 곡을 골라주세요.</p>'],
-    missing: [`‘${name}’에 맞는 가사가 없어요`, '<p>곡과 파일 이름이 같은 .lrc나 .srt를 찾아요. 가사 파일만 따로 추가해도 이미 있는 곡에 붙어요.</p><div class="btns"><label class="btn" role="button" tabindex="0" for="fileInput"><svg><use href="#i-note"/></svg>가사 파일 추가</label></div>'],
+    missing: [`‘${name}’에 맞는 가사가 없어요`, `<p>곡과 파일 이름이 같은 .lrc나 .srt를 찾아요. 가사 파일만 따로 추가해도 이미 있는 곡에 붙어요.${repoReady() && repo.idx ? ' 자막 저장소에도 맞는 자막이 없어요.' : ''}</p><div class="btns"><label class="btn" role="button" tabindex="0" for="fileInput"><svg><use href="#i-note"/></svg>가사 파일 추가</label></div>`],
     error: ['가사 파일을 읽지 못했어요', '<p>파일이 손상됐거나 텍스트 파일이 아닐 수 있어요.</p>'],
+    repoError: ['저장소 자막을 받지 못했어요', '<p>인터넷 연결이나 가사 설정 › 자막 저장소의 연결 상태를 확인해 주세요. 한 번 받은 자막은 인터넷 없이도 보여요.</p>'],
     blank: ['가사 파일에 보여줄 내용이 없어요', '<p>LRC는 [00:12.34], SRT는 00:00:12,340 --&gt; 00:00:15,000 같은 시간 표시가 있어야 해요.</p>'],
   };
   const [h, body] = msgs[kind];
@@ -1249,7 +1578,8 @@ function renderLyricLines() {
   els.lyrics.innerHTML = d.groups.map((g, i) => {
     const [main, ...subs] = g.lines;
     const head = main ? `<span class="main">${esc(main)}</span>` : '<span class="main rest" aria-label="간주">♪ ♪</span>';
-    return `<li class="ln" data-i="${i}">${head}${subs.map((s) => `<span class="sub">${esc(s)}</span>`).join('')}</li>`;
+    const ja = (g.ja || []).map((s) => `<span class="sub" lang="ja">${esc(s)}</span>`).join('');
+    return `<li class="ln" data-i="${i}">${head}${subs.map((s) => `<span class="sub">${esc(s)}</span>`).join('')}${ja}</li>`;
   }).join('');
   lyr.active = -1;
   setFollow(true, true);
@@ -1442,6 +1772,13 @@ function openSheet(title, render) {
   els.sheetClose.focus({ preventScroll: true });
 }
 function refreshSheet() { if (sheetRender && !els.sheetWrap.hidden) els.sheetBody.innerHTML = sheetRender(); }
+// another page inside the open sheet (가사 설정 › 자막 저장소), keeping where focus returns on close
+function switchSheet(title, render) {
+  sheetRender = render;
+  els.sheetTitle.innerHTML = title;
+  els.sheetBody.innerHTML = render();
+  els.sheetBody.parentElement.scrollTop = 0;
+}
 function closeSheet() {
   els.sheetWrap.hidden = true;
   sheetRender = null;
@@ -1502,6 +1839,13 @@ const lyrSheet = () => {
         <button type="button" data-act="ff:sans" class="${state.fontFam === 'sans' ? 'on' : ''}" aria-pressed="${state.fontFam === 'sans'}">고딕</button>
       </div>
     </div>
+    <div class="set">
+      <div class="set-h"><b>자막 언어</b><small>일본어 자막(.ja.srt)이 있는 곡은 한국어 아래에 일본어를 작게 함께 보여줘요</small></div>
+      <div class="seg" role="group" aria-label="자막 언어">
+        <button type="button" data-act="ja:ko" class="${state.jaMode === 'ko' ? 'on' : ''}" aria-pressed="${state.jaMode === 'ko'}">한국어만</button>
+        <button type="button" data-act="ja:both" class="${state.jaMode === 'both' ? 'on' : ''}" aria-pressed="${state.jaMode === 'both'}">한국어 + 일본어</button>
+      </div>
+    </div>
     <div class="sw-row">
       <div class="set-h"><b>스크롤 후 자동 복귀</b><small>가사를 넘겨 보다가 손을 떼면 5초 뒤 현재 가사로 돌아가요</small></div>
       <button class="switch" type="button" role="switch" aria-checked="${state.autoReturn}" aria-label="스크롤 후 자동 복귀" data-act="auto"></button>
@@ -1509,13 +1853,145 @@ const lyrSheet = () => {
     <div class="sw-row">
       <div class="set-h"><b>가사 볼 때 화면 켜두기</b><small>가사 탭에서 재생 중일 때 화면이 꺼지지 않아요</small></div>
       <button class="switch" type="button" role="switch" aria-checked="${state.keepAwake}" aria-label="가사 볼 때 화면 켜두기" data-act="wake"></button>
+    </div>
+    <div class="set">
+      <button class="opt nav" type="button" data-act="nav:repo"><svg><use href="#i-cloud"/></svg><span><b>자막 저장소</b><small id="repoNavSub">${esc(repoStatusShort())}</small></span><svg class="chev"><use href="#i-chev"/></svg></button>
     </div>`;
 };
+
+const ago = (t) => { const m = Math.floor((Date.now() - t) / 60000); return m < 1 ? '방금' : m < 60 ? `${m}분 전` : m < 1440 ? `${Math.floor(m / 60)}시간 전` : `${Math.floor(m / 1440)}일 전`; };
+function repoStatusShort() {
+  if (repo.status === 'busy') return '확인하는 중…';
+  if (!repo.cfg.token) return '연결 안 됨';
+  if (repo.status === 'err') return repo.msg;
+  if (!repo.cfg.on) return '꺼 둠';
+  return repo.idx ? `연결됨 · 자막 폴더 ${repo.idx.works.size}개` : '연결됨';
+}
+function repoStatusHTML() {
+  if (repo.status === 'busy') return '<b>확인하는 중…</b>';
+  const parts = [];
+  if (repo.status === 'err') parts.push(`<b>${esc(repo.msg)}</b>`);
+  if (!repo.cfg.token) {
+    if (!parts.length) parts.push('<b>연결 안 됨</b> · 비공개 GitHub 저장소의 자막을 쓰려면 읽기 전용 토큰을 넣고 연결하세요.');
+    return parts.join('<br>');
+  }
+  if (repo.status !== 'err') parts.push(`<b>연결됨</b> · ${esc(repo.cfg.name)}`);
+  if (repo.idx) {
+    const k = state.queue.filter((x) => x.repo).length;
+    parts.push(`자막 폴더 ${repo.idx.works.size}개${repo.checkedAt ? ` · ${ago(repo.checkedAt)} 확인` : ''}${repo.status === 'err' ? ' · 저장해 둔 목록을 써요' : ''}${k && repo.cfg.on ? `<br>이 목록의 ${k}곡에 자막이 있어요` : ''}`);
+  }
+  if (repo.dl) parts.push(`자막 받는 중 ${repo.dl.done} / ${repo.dl.total}`);
+  if (!repo.cfg.on) parts.push('꺼 두어서 저장소 자막을 쓰지 않아요');
+  return parts.join('<br>');
+}
+function paintRepoStatus() {
+  const st = $('repoStatus'), sub = $('repoNavSub');
+  if (st) { st.className = 'stat' + (repo.status === 'err' ? ' err' : ''); st.innerHTML = repoStatusHTML(); }
+  if (sub) sub.textContent = repoStatusShort();
+}
+function setRepoStatus(s, msg) { repo.status = s; repo.msg = msg || ''; paintRepoStatus(); }
+
+const HOW = { code: 'RJ 번호로 찾았어요', num: 'RJ 번호와 트랙 번호로 찾았어요', actor: '성우 폴더에서 찾았어요', name: '파일 이름으로 찾았어요' };
+const repoSheet = () => {
+  const cfg = repo.cfg, has = !!cfg.token, c = cur(), r = c && cfg.on ? c.repo : null;
+  const plain = 'autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"';
+  return `<button class="back" type="button" data-act="nav:lyr"><svg><use href="#i-back"/></svg>가사 설정</button>
+    <p class="stat${repo.status === 'err' ? ' err' : ''}" id="repoStatus">${repoStatusHTML()}</p>
+    <div class="set">
+      <label class="field">저장소<input id="repoName" type="text" value="${esc(repoDraft.name != null ? repoDraft.name : cfg.name)}" placeholder="owner/repo" ${plain}></label>
+      <label class="field">토큰<input id="repoToken" type="password" value="${esc(repoDraft.token || '')}" placeholder="${has ? '저장된 토큰을 쓰는 중 · 바꿀 때만 입력' : 'github_pat_…'}" ${plain}></label>
+      <div class="btnrow">
+        <button class="btn primary" type="button" data-act="repo:connect">${has ? '다시 연결' : '연결'}</button>
+        ${has ? '<button class="btn" type="button" data-act="repo:refresh">목록 새로고침</button>' : ''}
+      </div>
+      <p class="hint">토큰은 GitHub › Settings › Developer settings › Fine-grained tokens에서 만들어요. Repository access는 Only select repositories로 이 저장소 하나만, Permissions는 Contents: Read-only만 주세요. 토큰은 이 기기의 브라우저에만 저장돼요.</p>
+    </div>
+    ${has ? `<div class="sw-row">
+      <div class="set-h"><b>저장소 자막 쓰기</b><small>곡을 추가하면 폴더 이름의 RJ 번호로, 없으면 성우 이름 폴더에서 자막을 찾아 받아 둬요. 곡 옆의 가사 파일보다 먼저 써요</small></div>
+      <button class="switch" type="button" role="switch" aria-checked="${cfg.on}" aria-label="저장소 자막 쓰기" data-act="repo:toggle"></button>
+    </div>` : ''}
+    ${r ? `<div class="set">
+      <div class="set-h"><b>지금 곡의 자막 폴더</b><small>${HOW[r.how]}${r.alts.length > 1 ? ' · 맞는 폴더가 여러 개예요. 고른 폴더는 이 작품의 모든 곡에 적용돼요' : ''}</small></div>
+      <div class="opts">${r.alts.map((a, i) => `<button class="opt${a.dir === r.dir ? ' sel' : ''}" type="button" data-act="pick:${i}" aria-pressed="${a.dir === r.dir}"${r.alts.length > 1 ? '' : ' disabled'}><svg><use href="#i-folder"/></svg><span><b>${esc(a.name)}</b></span></button>`).join('')}</div>
+    </div>` : ''}
+    ${has ? `<div class="set">
+      <div class="btnrow"><button class="btn" type="button" data-act="repo:forget" style="color:var(--danger)">연결 끊기</button></div>
+      <p class="hint">토큰과 이 기기에 받아 둔 자막을 지워요.</p>
+    </div>` : ''}`;
+};
+
+async function repoAction(a) {
+  if (a === 'connect') {
+    const name = String(repoDraft.name != null ? repoDraft.name : repo.cfg.name).trim()
+      .replace(/^(https?:\/\/)?github\.com\//i, '').replace(/\.git$/i, '').replace(/\/+$/, '');
+    const token = String(repoDraft.token || '').trim() || repo.cfg.token;
+    if (!/^[\w.-]+\/[\w.-]+$/.test(name)) { setRepoStatus('err', '저장소는 owner/repo 형식으로 적어 주세요'); return; }
+    if (!token) { setRepoStatus('err', '토큰을 넣어 주세요'); return; }
+    setRepoStatus('busy');
+    let info;
+    try { info = await gh(rp(name), token); } catch (e) { setRepoStatus('err', e.message); return; }
+    if (name !== repo.cfg.name) {   // another repository: drop what was kept from the old one
+      repo.tree = repo.idx = null;
+      await kv.clear();
+      textCache = new WeakMap();
+      repoSrcs.clear();
+    }
+    repo.cfg = { name, token, branch: info.default_branch || 'main', on: true };
+    saveRepoCfg();
+    repoDraft = {};
+    await repoSync(true);
+    repoRematch();
+    repoPrefetch();
+    refreshSheet();
+    if (repo.status === 'ok') toast(`자막 저장소에 연결했어요 · 자막 폴더 ${repo.idx ? repo.idx.works.size : 0}개`);
+  } else if (a === 'refresh') {
+    await repoSync(true);
+    repoRematch();
+    repoPrefetch();
+    refreshSheet();
+  } else if (a === 'toggle') {
+    repo.cfg.on = !repo.cfg.on;
+    saveRepoCfg();
+    lyricVer++;
+    renderQueue();
+    loadLyrics();
+    refreshSheet();
+    if (repo.cfg.on) repoAfterAdd();
+  } else if (a === 'forget') {
+    if (!confirm('연결을 끊고 이 기기에 받아 둔 자막을 지울까요? 다시 연결하려면 토큰을 새로 넣어야 해요.')) return;
+    repo.cfg = { name: repo.cfg.name, token: '', branch: '', on: true };
+    saveRepoCfg();
+    repo.tree = repo.idx = null;
+    repo.checkedAt = 0;
+    await kv.clear();
+    textCache = new WeakMap();
+    repoSrcs.clear();
+    setRepoStatus('idle');
+    repoRematch();
+    refreshSheet();
+    toast('자막 저장소 연결을 끊었어요');
+  }
+}
 
 els.sheetBody.addEventListener('click', (e) => {
   const b = e.target.closest('[data-act]');
   if (!b || b.disabled) return;
   const [act, val] = b.dataset.act.split(':');
+  if (act === 'nav') {
+    if (val === 'repo') { repoDraft = {}; switchSheet('자막 저장소', repoSheet); } else switchSheet('가사 설정', lyrSheet);
+    return;
+  }
+  if (act === 'repo') { repoAction(val); return; }
+  if (act === 'pick') {
+    const c = cur(), a = c && c.repo && c.repo.alts[+val];
+    if (!a) return;
+    repo.picks[c.repo.group] = a.dir;
+    store.set('repoPick', repo.picks);
+    repoRematch();
+    repoPrefetch();
+    refreshSheet();
+    return;
+  }
   if (act === 'mode') { setMode(val); closeSheet(); return; }
   if (act === 'rate') { setRate(+val); closeSheet(); return; }
   if (act === 'sleep') { setSleep(val === 'off' || val === 'end' ? val : +val); closeSheet(); return; }
@@ -1550,8 +2026,19 @@ els.sheetBody.addEventListener('click', (e) => {
     state.keepAwake = !state.keepAwake;
     store.set('keepAwake', state.keepAwake);
     syncWake();
+  } else if (act === 'ja') {
+    state.jaMode = val;
+    store.set('jaMode', val);
+    loadLyrics();
   }
   refreshSheet();
+});
+els.sheetBody.addEventListener('input', (e) => {
+  if (e.target.id === 'repoName') repoDraft.name = e.target.value;
+  else if (e.target.id === 'repoToken') repoDraft.token = e.target.value;
+});
+els.sheetBody.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && e.target.closest('.field')) { e.preventDefault(); e.target.blur(); repoAction('connect'); }
 });
 
 els.bMode.addEventListener('click', () => openSheet('재생 모드', modeSheet));
@@ -1625,6 +2112,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 /* ---------- start ---------- */
+repo.loading = repo.cfg.token ? repoLoadCached() : Promise.resolve();
 applyLyricStyle();
 renderMode();
 renderRate();
