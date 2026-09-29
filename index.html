@@ -1,0 +1,1622 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="&lt;mark&gt;">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<link rel="icon" href="data:image/png;base64,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">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title><mark></title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap">
+<style>
+/* Layout: one-screen app — tabs on top, one scrolling panel, transport dock at the bottom.
+   The single bold element is the current-lyric box; everything else stays quiet. */
+:root{
+  --bg:#F1F2F6; --raise:#FFFFFF; --sunk:#E4E6EE; --line:#D6D9E3;
+  --fg:#151925; --muted:#5E6579; --faint:#9CA1B2;
+  --accent:#2C55D8; --on-accent:#FFFFFF; --accent-soft:rgba(44,85,216,.10); --accent-line:rgba(44,85,216,.5);
+  --danger:#BF3A2F; --inv-accent:#A8BBFF; --knob:#FFFFFF; --scrim:rgba(12,14,20,.45);
+  --shadow:0 12px 32px rgba(21,25,37,.18);
+  --font-ui:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Segoe UI","Noto Sans KR",system-ui,sans-serif;
+  --font-lyric:"Gowun Batang","AppleMyungjo","Nanum Myeongjo",Batang,serif;
+  --font-code:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --brand:#FAC775; --brand-ink:#1A2240;   /* logo only; same in both themes */
+  --lyric-size:20px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1118; --raise:#1A1D27; --sunk:#20242F; --line:#2B303D;
+    --fg:#E8EBF3; --muted:#959CB0; --faint:#5F6679;
+    --accent:#88A3FF; --on-accent:#0D1017; --accent-soft:rgba(136,163,255,.13); --accent-line:rgba(136,163,255,.55);
+    --danger:#FF857A; --inv-accent:#2C55D8; --knob:#FFFFFF; --scrim:rgba(0,0,0,.55);
+    --shadow:0 12px 32px rgba(0,0,0,.55);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1118; --raise:#1A1D27; --sunk:#20242F; --line:#2B303D;
+  --fg:#E8EBF3; --muted:#959CB0; --faint:#5F6679;
+  --accent:#88A3FF; --on-accent:#0D1017; --accent-soft:rgba(136,163,255,.13); --accent-line:rgba(136,163,255,.55);
+  --danger:#FF857A; --inv-accent:#2C55D8; --knob:#FFFFFF; --scrim:rgba(0,0,0,.55);
+  --shadow:0 12px 32px rgba(0,0,0,.55);
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+html{height:100%;box-sizing:border-box}
+*,*::before,*::after{box-sizing:inherit}
+body{height:100%;margin:0;overflow:hidden;background:var(--bg);color:var(--fg);font-family:var(--font-ui);font-size:15px;line-height:1.4;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;-webkit-user-select:none;user-select:none}
+label.btn{cursor:pointer;-webkit-user-select:none;user-select:none}
+button:disabled{cursor:default}
+svg{display:block}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+#app{height:100%;display:flex;flex-direction:column;max-width:720px;margin:0 auto}
+
+/* header */
+.top{display:flex;align-items:center;gap:12px;padding:10px 16px 6px}
+/* wordmark: brand highlighter yellow, used nowhere else, so the logo never looks like a selection or the lyric box */
+.logo{flex:none;display:flex;align-items:center;font-family:var(--font-code);font-size:16px;font-weight:700;letter-spacing:-.02em}
+.logo i{font-style:normal;font-weight:600;color:var(--muted)}
+.logo b{position:relative;isolation:isolate;margin:0 4px;padding:0 3px;color:var(--brand-ink);line-height:1.55}
+.logo b::before{content:"";position:absolute;inset:1px -3px 0;z-index:-1;background:var(--brand);border-radius:2px 6px 3px 7px;transform:skewX(-12deg) rotate(-3deg)}
+.tabs{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:3px;padding:3px;border-radius:10px;background:var(--sunk)}
+.tab{height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;font-weight:600;color:var(--muted)}
+.tab[aria-selected="true"]{background:var(--raise);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.tab .n{font-size:12px;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums}
+
+main{flex:1;min-height:0;position:relative;display:flex;flex-direction:column}
+.panel{flex:1;min-height:0;display:flex;flex-direction:column;position:relative}
+.bar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:6px 16px 8px}
+.spacer{flex:1}
+.scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+
+.btn{height:34px;padding:0 12px;border-radius:9px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-size:13.5px;font-weight:600;background:var(--raise);border:1px solid var(--line);color:var(--fg)}
+.btn svg{width:17px;height:17px;flex:none}
+.btn.ghost{background:none;border-color:transparent;color:var(--accent);padding:0 8px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn:disabled{opacity:.4}
+.btn.sm{height:32px;padding:0 10px;font-size:13px}
+.selcount{font-size:13.5px;font-weight:600;font-variant-numeric:tabular-nums}
+
+/* queue */
+.note{margin:2px 16px 8px;padding:10px 12px;border-radius:10px;background:var(--sunk);font-size:13px;line-height:1.5;color:var(--muted)}
+.note b{color:var(--fg);font-weight:600}
+#queue{list-style:none;margin:0;padding:0 0 16px;position:relative}
+.row{position:relative;display:flex;align-items:center;min-height:58px;background:var(--bg);border-bottom:1px solid var(--line);-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.row:first-child{border-top:1px solid var(--line)}
+.row.cur{background:var(--accent-soft)}
+.grip{width:44px;align-self:stretch;flex:none;display:flex;align-items:center;justify-content:center;color:var(--faint);touch-action:none;cursor:grab}
+.grip svg{width:18px;height:18px}
+.title-btn{flex:1;min-width:0;padding:9px 0;text-align:left;display:flex;flex-direction:column;gap:4px}
+.t{font-size:15px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.row.cur .t{color:var(--accent);font-weight:700}
+.meta{display:flex;align-items:center;gap:5px;min-width:0;font-size:11.5px;color:var(--muted)}
+.chip{flex:none;padding:0 5px;border:1px solid var(--line);border-radius:4px;font-size:10.5px;font-weight:700;letter-spacing:.04em;line-height:16px;color:var(--muted)}
+.chip.ly{border-color:var(--accent-line);color:var(--accent)}
+.chip.ex{border-color:var(--fg);color:var(--fg)}
+.chip.warn{border-color:var(--danger);color:var(--danger)}
+.dir{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rm{width:46px;align-self:stretch;flex:none;display:flex;align-items:center;justify-content:center;color:var(--faint)}
+.rm svg{width:18px;height:18px}
+.row.bad .t{color:var(--faint);text-decoration:line-through}
+.eq{display:none;align-items:flex-end;gap:2px;height:10px;flex:none;margin-right:2px}
+body.playing .row.cur .eq{display:inline-flex}
+.eq i{display:block;width:2.5px;height:35%;border-radius:1px;background:var(--accent)}
+body.playing .eq i{animation:eq .8s ease-in-out infinite alternate}
+.eq i:nth-child(2){animation-delay:-.3s!important}.eq i:nth-child(3){animation-delay:-.55s!important}
+@keyframes eq{from{height:25%}to{height:100%}}
+.row.dragging{z-index:5;background:var(--raise);border-radius:10px;border-color:transparent;box-shadow:var(--shadow)}
+.row.dragging .grip{cursor:grabbing;color:var(--accent)}
+.check{width:22px;height:22px;border-radius:50%;border:2px solid var(--faint);display:flex;align-items:center;justify-content:center;color:var(--on-accent)}
+.check svg{width:13px;height:13px;opacity:0}
+.row.sel .check{background:var(--accent);border-color:var(--accent)}
+.row.sel .check svg{opacity:1}
+.row.sel{background:var(--accent-soft)}
+
+.empty{padding:28px 20px;display:flex;flex-direction:column;align-items:flex-start;gap:10px;max-width:460px;color:var(--muted)}
+.empty h3{margin:0;font-size:17px;color:var(--fg);text-wrap:balance}
+.empty p{margin:0;line-height:1.55}
+.empty .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.fine{font-size:12.5px}
+
+/* lyrics */
+.seg{display:inline-flex;gap:2px;padding:3px;border-radius:9px;background:var(--sunk)}
+.seg button{height:28px;padding:0 12px;border-radius:7px;font-size:12.5px;font-weight:700;letter-spacing:.05em;color:var(--muted)}
+.seg button.on{background:var(--raise);color:var(--accent);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.seg button:disabled{opacity:.35}
+.lyrics{position:relative;padding-inline:16px}
+.lnote{margin:0 4px 8px;font-size:12.5px;color:var(--muted)}
+#lyrics{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.ln{display:flex;flex-direction:column;gap:.15em;padding:.38em .7em;border:2px solid transparent;border-radius:12px;font-family:var(--font-lyric);font-size:var(--lyric-size);line-height:1.45;color:var(--muted);cursor:pointer;word-break:keep-all;overflow-wrap:anywhere;transition:color .3s}
+.sans .ln{font-family:var(--font-ui)}
+.ln .sub{font-size:.72em;opacity:.9}
+.ln .rest{letter-spacing:.2em}
+.ln.on{color:var(--fg)}
+.ln.on .sub{color:var(--muted)}
+.ln.on.gap{color:var(--muted)}
+.lyrics.free .ln.on{color:var(--accent)}
+/* fixed box in the middle of the lyrics view; lines scroll through it */
+.lwrap{flex:1;min-height:0;position:relative;display:flex;flex-direction:column}
+.lwrap .lyrics{position:relative;z-index:1}
+.lframe{position:absolute;z-index:0;left:16px;right:16px;top:50%;height:60px;transform:translateY(-50%);border:2px solid var(--accent);border-radius:12px;background:var(--accent-soft);pointer-events:none;opacity:0;transition:height .3s ease,opacity .25s,border-color .25s,background-color .25s}
+.lframe.show{opacity:1}
+.lframe.gap{border-style:dashed;border-color:var(--accent-line);background:transparent}
+.untimed .ln{cursor:default;color:var(--fg)}
+.lyrics.center .ln{align-items:center;text-align:center}
+.lyrics.center .lnote{text-align:center}
+.follow{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:4;height:38px;padding:0 16px 0 12px;border-radius:19px;display:inline-flex;align-items:center;gap:7px;background:var(--accent);color:var(--on-accent);font-size:13.5px;font-weight:700;box-shadow:var(--shadow);white-space:nowrap}
+.follow svg{width:17px;height:17px}
+main:has(.toast:not([hidden])) .follow{bottom:72px}
+
+/* toast */
+.toast{position:absolute;left:16px;right:16px;bottom:12px;z-index:10;max-width:440px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:11px 12px 11px 14px;border-radius:12px;background:var(--fg);color:var(--bg);font-size:13.5px;box-shadow:var(--shadow)}
+.toast span{flex:1;min-width:0}
+.toast button{flex:none;font-weight:700;color:var(--inv-accent)}
+
+/* dock */
+.dock{flex:none;display:flex;flex-direction:column;gap:4px;padding:10px 16px 8px;border-top:1px solid var(--line);background:var(--bg)}
+.now{min-width:0}
+.now-t{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.now-s{min-height:17px;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+/* touch area is 48px tall and reaches into the side gutters; the negative margins keep the dock the same height */
+.seek{position:relative;z-index:1;height:48px;margin:-11px -16px;padding-inline:16px;display:flex;align-items:center;cursor:pointer;touch-action:none;border-radius:6px}
+.track{position:relative;flex:1;height:6px;border-radius:3px;background:var(--sunk);transition:height .15s}
+.fill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:3px;background:var(--accent)}
+.thumb{position:absolute;top:50%;left:0;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--bg);transition:transform .15s}
+.seek.active .track{height:8px}
+.seek.active .thumb{transform:scale(1.25)}
+.times{display:flex;justify-content:space-between;margin-top:-3px;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.transport{display:flex;align-items:center;justify-content:space-between;padding:0 2px}
+.tb{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--fg)}
+.tb svg{width:26px;height:26px}
+.tb.skip svg{width:30px;height:30px}
+.tb.play{width:62px;height:62px;background:var(--accent);color:var(--on-accent)}
+.tb.play svg{width:28px;height:28px}
+.tb:active{background:var(--sunk)}
+.tb.play:active{background:var(--accent);filter:brightness(.9)}
+.extras{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:2px}
+.xb{height:34px;min-width:0;padding:0 6px;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--sunk);color:var(--muted);font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.xb span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xb svg{width:17px;height:17px;flex:none}
+.xb.on{background:var(--accent-soft);color:var(--accent)}
+
+/* sheet */
+.sheet-wrap{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center;background:var(--scrim)}
+.sheet{width:100%;max-width:560px;max-height:82%;overflow-y:auto;overscroll-behavior:contain;padding:6px 16px calc(18px + env(safe-area-inset-bottom,0px));border-radius:18px 18px 0 0;background:var(--raise);box-shadow:var(--shadow)}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0 10px}
+.sheet-head h2{margin:0;font-size:16px}
+.sheet-head small{display:block;margin-top:2px;font-size:12.5px;font-weight:400;color:var(--muted)}
+.icon-btn{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--sunk);color:var(--muted);flex:none}
+.icon-btn svg{width:18px;height:18px}
+.opts{display:flex;flex-direction:column;gap:4px}
+.opt{display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 10px;border-radius:12px;text-align:left}
+.opt>svg{width:22px;height:22px;flex:none;color:var(--muted)}
+.opt>span{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.opt b{font-weight:650}
+.opt small{font-size:12.5px;color:var(--muted)}
+.opt.sel{background:var(--accent-soft)}
+.opt.sel>svg{color:var(--accent)}
+.chips{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.chips.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.chipbtn{height:46px;border-radius:10px;background:var(--sunk);font-size:14.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.chipbtn.sel{background:var(--accent);color:var(--on-accent)}
+.chipbtn.full{grid-column:1/-1}
+.set{display:flex;flex-direction:column;gap:9px;padding:14px 0;border-top:1px solid var(--line)}
+.set:first-child{border-top:0;padding-top:4px}
+.set-h{display:flex;flex-direction:column;gap:2px}
+.set-h b{font-weight:650}
+.set-h small,.hint{font-size:12.5px;color:var(--muted);margin:0}
+.stepper{display:flex;align-items:center;gap:6px}
+.stepper output{flex:1;min-width:0;text-align:center;font-weight:700;font-size:15px;font-variant-numeric:tabular-nums}
+.stepper .btn{padding:0 10px;font-variant-numeric:tabular-nums}
+.sw-row{display:flex;align-items:center;gap:12px;padding:14px 0;border-top:1px solid var(--line)}
+.sw-row .set-h{flex:1;min-width:0}
+.switch{position:relative;flex:none;width:50px;height:30px;border-radius:15px;background:var(--line);transition:background .2s}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--knob);box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s}
+.switch[aria-checked="true"]{background:var(--accent)}
+.switch[aria-checked="true"]::after{transform:translateX(20px)}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{transition:none!important;animation:none!important}
+}
+</style>
+
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5.14v13.72a1 1 0 0 0 1.52.85l10.9-6.86a1 1 0 0 0 0-1.7L9.52 4.3A1 1 0 0 0 8 5.14z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><rect fill="currentColor" x="6" y="4.5" width="4.2" height="15" rx="1.2"/><rect fill="currentColor" x="13.8" y="4.5" width="4.2" height="15" rx="1.2"/></symbol>
+    <symbol id="i-prev" viewBox="0 0 24 24"><rect fill="currentColor" x="4.5" y="5" width="2.4" height="14" rx="1"/><path fill="currentColor" d="M19.5 6.1v11.8a.9.9 0 0 1-1.38.76L9.2 12.76a.9.9 0 0 1 0-1.52l8.92-5.9a.9.9 0 0 1 1.38.76z"/></symbol>
+    <symbol id="i-next" viewBox="0 0 24 24"><rect fill="currentColor" x="17.1" y="5" width="2.4" height="14" rx="1"/><path fill="currentColor" d="M4.5 6.1v11.8a.9.9 0 0 0 1.38.76l8.92-5.9a.9.9 0 0 0 0-1.52L5.88 5.34a.9.9 0 0 0-1.38.76z"/></symbol>
+    <symbol id="i-back10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/><text x="12.3" y="15.3" text-anchor="middle" font-size="7.8" font-weight="700" fill="currentColor" stroke="none" font-family="-apple-system,system-ui,sans-serif">10</text></symbol>
+    <symbol id="i-fwd10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/><text x="11.7" y="15.3" text-anchor="middle" font-size="7.8" font-weight="700" fill="currentColor" stroke="none" font-family="-apple-system,system-ui,sans-serif">10</text></symbol>
+    <symbol id="i-grip" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></symbol>
+    <symbol id="i-note" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></symbol>
+    <symbol id="i-all" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h10M3 11h10M3 16h6M18 4v12M15 13l3 3 3-3M15 20h6"/></symbol>
+    <symbol id="i-repeat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></symbol>
+    <symbol id="i-repeat1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/><text x="12" y="15" text-anchor="middle" font-size="8" font-weight="800" fill="currentColor" stroke="none" font-family="-apple-system,system-ui,sans-serif">1</text></symbol>
+    <symbol id="i-shuffle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></symbol>
+    <symbol id="i-one" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 12h6M14.5 9l3 3-3 3M20.5 6.5v11"/><text x="6" y="16.5" text-anchor="middle" font-size="12" font-weight="800" fill="currentColor" stroke="none" font-family="-apple-system,system-ui,sans-serif">1</text></symbol>
+    <symbol id="i-gauge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14l4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol>
+    <symbol id="i-locate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></symbol>
+  </defs>
+</svg>
+
+<div id="app">
+  <header class="top">
+    <div class="logo" role="img" aria-label="mark"><i>&lt;</i><b>mark</b><i>&gt;</i></div>
+    <div class="tabs" role="tablist" aria-label="화면 전환">
+      <button class="tab" role="tab" id="tabQueue" aria-controls="panelQueue" aria-selected="true" type="button">재생목록 <span class="n" id="qCount">0</span></button>
+      <button class="tab" role="tab" id="tabLyrics" aria-controls="panelLyrics" aria-selected="false" type="button">가사</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel" id="panelQueue" role="tabpanel" aria-labelledby="tabQueue">
+      <div class="bar" id="qBar">
+        <label class="btn" for="fileInput"><svg><use href="#i-note"/></svg>파일 추가</label>
+        <label class="btn" for="dirInput"><svg><use href="#i-folder"/></svg>폴더 추가</label>
+        <span class="spacer"></span>
+        <button class="btn ghost" id="selStart" type="button">선택</button>
+      </div>
+      <div class="bar" id="selBar" hidden>
+        <button class="btn ghost" id="selAll" type="button">전체 선택</button>
+        <span class="selcount" id="selCount">0곡 선택</span>
+        <span class="spacer"></span>
+        <button class="btn ghost" id="selDone" type="button">완료</button>
+      </div>
+      <div class="bar" id="selActs" hidden>
+        <button class="btn sm" id="selRemove" type="button"><svg><use href="#i-trash"/></svg>선택한 곡 빼기</button>
+        <button class="btn sm" id="selKeep" type="button">선택 안 한 곡 빼기</button>
+      </div>
+      <div class="scroll" id="qScroll">
+        <div class="note" id="qNote" hidden></div>
+        <ul id="queue" aria-label="재생 대기열"></ul>
+        <div class="empty" id="qEmpty" hidden>
+          <h3>재생목록이 비었어요</h3>
+          <p>음악 폴더를 통째로 추가하면, 곡과 이름이 같은 LRC·SRT 가사도 함께 불러와요.</p>
+          <div class="btns">
+            <label class="btn primary" for="dirInput"><svg><use href="#i-folder"/></svg>폴더 추가</label>
+            <label class="btn" for="fileInput"><svg><use href="#i-note"/></svg>파일 추가</label>
+          </div>
+          <p class="fine">폴더 선택은 iOS 18.4 이상에서 돼요. 그보다 낮으면 파일 추가에서 곡과 가사 파일을 여러 개 함께 고르세요.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="panelLyrics" role="tabpanel" aria-labelledby="tabLyrics" hidden>
+      <div class="bar">
+        <div class="seg" role="group" aria-label="가사 종류">
+          <button id="srcLrc" type="button" aria-pressed="true">LRC</button>
+          <button id="srcSrt" type="button" aria-pressed="false">SRT</button>
+        </div>
+        <span class="spacer"></span>
+        <button class="btn" id="lyrSettings" type="button"><svg><use href="#i-sliders"/></svg><span id="lyrSetLabel">가사 설정</span></button>
+      </div>
+      <div class="lwrap" id="lWrap">
+        <div class="lframe" id="lFrame" aria-hidden="true"></div>
+        <div class="scroll lyrics" id="lScroll">
+          <div id="lTop"></div>
+          <p class="lnote" id="lNote" hidden>시간 정보가 없는 가사라 자동으로 따라가지 않아요.</p>
+          <ol id="lyrics" aria-label="가사"></ol>
+          <div id="lBot"></div>
+        </div>
+      </div>
+      <div class="empty" id="lEmpty" hidden></div>
+      <button class="follow" id="followBtn" type="button" hidden><svg><use href="#i-locate"/></svg>현재 가사로</button>
+    </section>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden><span id="toastMsg"></span><button id="toastAct" type="button" hidden>되돌리기</button></div>
+  </main>
+
+  <footer class="dock">
+    <div class="now">
+      <div class="now-t" id="nowTitle">곡을 추가해주세요</div>
+      <div class="now-s" id="nowSub"></div>
+    </div>
+    <div class="seek" id="seek" role="slider" tabindex="0" aria-label="재생 위치" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" aria-valuetext="0:00">
+      <div class="track" id="seekTrack"><div class="fill" id="seekFill"></div><div class="thumb" id="seekThumb"></div></div>
+    </div>
+    <div class="times"><span id="tCur">0:00</span><span id="tRem">0:00</span></div>
+    <div class="transport">
+      <button class="tb" id="bPrev" type="button" aria-label="이전 곡"><svg><use href="#i-prev"/></svg></button>
+      <button class="tb skip" id="bBack" type="button" aria-label="10초 뒤로"><svg><use href="#i-back10"/></svg></button>
+      <button class="tb play" id="bPlay" type="button" aria-label="재생"><svg><use id="playIcon" href="#i-play"/></svg></button>
+      <button class="tb skip" id="bFwd" type="button" aria-label="10초 앞으로"><svg><use href="#i-fwd10"/></svg></button>
+      <button class="tb" id="bNext" type="button" aria-label="다음 곡"><svg><use href="#i-next"/></svg></button>
+    </div>
+    <div class="extras">
+      <button class="xb" id="bMode" type="button" aria-label="재생 모드"><svg><use id="modeIcon" href="#i-all"/></svg><span id="modeLabel">전체재생</span></button>
+      <button class="xb" id="bRate" type="button" aria-label="재생 속도"><svg><use href="#i-gauge"/></svg><span id="rateLabel">1.0×</span></button>
+      <button class="xb" id="bSleep" type="button" aria-label="수면 타이머"><svg><use href="#i-moon"/></svg><span id="sleepLabel">수면 타이머</span></button>
+    </div>
+  </footer>
+</div>
+
+<div class="sheet-wrap" id="sheetWrap" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="sheet-head"><h2 id="sheetTitle"></h2><button class="icon-btn" id="sheetClose" type="button" aria-label="닫기"><svg><use href="#i-x"/></svg></button></div>
+    <div id="sheetBody"></div>
+  </div>
+</div>
+
+<audio id="audio" preload="metadata"></audio>
+<input class="vh" type="file" id="fileInput" multiple tabindex="-1" aria-hidden="true">
+<input class="vh" type="file" id="dirInput" webkitdirectory multiple tabindex="-1" aria-hidden="true">
+
+<script>
+(() => {
+'use strict';
+
+/* ---------- small helpers ---------- */
+const $ = (s) => document.getElementById(s);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const fmt = (s) => {
+  if (!isFinite(s) || s < 0) s = 0;
+  s = Math.floor(s);
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), x = s % 60;
+  return h ? `${h}:${String(m).padStart(2, '0')}:${String(x).padStart(2, '0')}` : `${m}:${String(x).padStart(2, '0')}`;
+};
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('hanjul:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('hanjul:' + k, JSON.stringify(v)); } catch (e) { /* storage off */ } },
+};
+const reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+const collator = new Intl.Collator('ko', { numeric: true, sensitivity: 'base' });
+let seq = 0;
+const uid = () => 'q' + (++seq);
+
+const AUDIO_EXT = new Set(['mp3', 'm4a', 'm4b', 'aac', 'wav', 'aif', 'aiff', 'caf', 'flac', 'alac', 'ogg', 'oga', 'opus', 'wma', 'ape', 'mp4', 'webm', 'mka']);
+const LYRIC_EXT = new Set(['lrc', 'srt', 'vtt']);
+
+function splitName(path) {
+  const parts = path.split('/');
+  const name = parts.pop() || '';
+  const dot = name.lastIndexOf('.');
+  return { name, base: dot > 0 ? name.slice(0, dot) : name, ext: dot > 0 ? name.slice(dot + 1).toLowerCase() : '', dir: parts.join('/') };
+}
+
+/* ---------- lyric parsing ---------- */
+function parseLRC(text) {
+  const rows = text.replace(/\r\n?/g, '\n').split('\n');
+  let offset = 0;
+  const entries = [], plain = [];
+  const lead = /^((?:\[\d{1,3}:\d{1,2}(?:[.:]\d{1,3})?\]\s*)+)(.*)$/;
+  const stamp = /\[(\d{1,3}):(\d{1,2})(?:[.:](\d{1,3}))?\]/g;
+  for (const raw of rows) {
+    const line = raw.trim();
+    if (!line) continue;
+    const om = /^\[offset:\s*([+-]?\d+)\s*\]$/i.exec(line);
+    if (om) { offset = parseInt(om[1], 10) / 1000; continue; }
+    if (/^\[[a-z#]+:[^\]]*\]$/i.test(line)) continue; // [ti:] [ar:] [al:] …
+    const m = lead.exec(line);
+    if (!m) { plain.push(line); continue; }
+    const txt = m[2].replace(/<\d{1,3}:\d{1,2}(?:[.:]\d{1,3})?>/g, '').replace(/\s+/g, ' ').trim();
+    let tm; stamp.lastIndex = 0;
+    while ((tm = stamp.exec(m[1]))) {
+      const frac = tm[3] ? parseInt(tm[3], 10) / Math.pow(10, tm[3].length) : 0;
+      entries.push({ t: parseInt(tm[1], 10) * 60 + parseInt(tm[2], 10) + frac, text: txt });
+    }
+  }
+  if (!entries.length) return { timed: false, groups: plain.map((s) => ({ t: 0, lines: [s] })) };
+  entries.sort((a, b) => a.t - b.t);
+  const groups = [];
+  for (const e of entries) {
+    const last = groups[groups.length - 1];
+    if (last && Math.abs(last.t - e.t) < 0.005) last.lines.push(e.text);
+    else groups.push({ t: e.t, lines: [e.text] });
+  }
+  // [offset:+500] means lyrics show 0.5 s sooner
+  for (const g of groups) { g.t = Math.max(0, g.t - offset); const words = g.lines.filter(Boolean); g.lines = words.length ? words : ['']; }
+  return { timed: true, groups };
+}
+
+function parseSRT(text) {
+  const blocks = text.replace(/\r\n?/g, '\n').split(/\n[ \t]*\n/);
+  const re = /(?:(\d{1,2}):)?(\d{1,2}):(\d{2})[,.](\d{1,3})\s*-->\s*(?:(\d{1,2}):)?(\d{1,2}):(\d{2})[,.](\d{1,3})/;
+  const toS = (h, m, s, ms) => (+h || 0) * 3600 + +m * 60 + +s + +ms / Math.pow(10, ms.length);
+  const clean = (s) => s.replace(/<[^>]+>/g, '').replace(/\{\\[^}]*\}/g, '').trim();
+  const groups = [];
+  for (const b of blocks) {
+    const ls = b.split('\n');
+    const i = ls.findIndex((l) => re.test(l));
+    if (i < 0) continue;
+    const m = re.exec(ls[i]);
+    const lines = ls.slice(i + 1).map(clean).filter(Boolean);
+    if (!lines.length) continue;
+    groups.push({ t: toS(m[1], m[2], m[3], m[4]), end: toS(m[5], m[6], m[7], m[8]), lines });
+  }
+  groups.sort((a, b) => a.t - b.t);
+  return { timed: groups.length > 0, groups };
+}
+
+async function readText(file) {
+  const buf = new Uint8Array(await file.arrayBuffer());
+  if (buf[0] === 0xFF && buf[1] === 0xFE) return new TextDecoder('utf-16le').decode(buf.subarray(2));
+  if (buf[0] === 0xFE && buf[1] === 0xFF) return new TextDecoder('utf-16be').decode(buf.subarray(2));
+  const start = buf[0] === 0xEF && buf[1] === 0xBB && buf[2] === 0xBF ? 3 : 0;
+  try { return new TextDecoder('utf-8', { fatal: true }).decode(buf.subarray(start)); }
+  catch (e) {
+    try { return new TextDecoder('euc-kr').decode(buf); } // old Korean LRC files
+    catch (e2) { return new TextDecoder('utf-8').decode(buf); }
+  }
+}
+/* ---------- end lyric parsing ---------- */
+
+/* ---------- sample track (generated, so the player works before any files are added) ---------- */
+const SAMPLE_LRC = `[ti:<mark> 예시 곡]
+[00:00.50]<mark>의 예시 곡이에요
+[00:00.50]This is a sample track
+[00:04.79]지금 부르는 줄을 네모가 따라가요
+[00:04.79]The box follows the current line
+[00:09.07]아무 줄이나 누르면 그곳으로 가요
+[00:09.07]Tap any line to jump there
+[00:13.36]손가락으로 밀면 따라가기가 멈추고
+[00:13.36]Swipe, and auto-follow pauses
+[00:17.64]손을 떼고 잠시 뒤 다시 돌아와요
+[00:17.64]It comes back after a moment
+[00:21.93]곡을 추가하면 이 예시는 빠져요
+[00:21.93]Add your music and this sample leaves
+[00:26.21]`;
+const SAMPLE_SRT = `1
+00:00:00,500 --> 00:00:03,700
+SRT 자막으로 보는 예시 곡이에요
+
+2
+00:00:04,790 --> 00:00:08,000
+SRT는 자막이 끝나는 시간도 알아요
+
+3
+00:00:09,070 --> 00:00:12,300
+줄 사이 빈틈에는 네모가 점선이 돼요
+
+4
+00:00:13,360 --> 00:00:16,600
+위의 버튼으로 LRC와 SRT를 바꿔요
+
+5
+00:00:17,640 --> 00:00:20,900
+싱크가 어긋나면 가사 설정에서 맞춰요
+
+6
+00:00:21,930 --> 00:00:25,200
+곡을 추가하면 이 예시는 빠져요
+`;
+
+function buildSampleWav() {
+  const sr = 22050, beat = 60 / 84, start = 0.5, dur = 31;
+  const n = Math.floor(sr * dur);
+  const buf = new Float32Array(n);
+  const add = (t0, midi, len, amp, decay, h2, h3) => {
+    const f = 440 * Math.pow(2, (midi - 69) / 12);
+    const i0 = Math.floor(t0 * sr), i1 = Math.min(n, i0 + Math.floor(len * sr));
+    const w = 2 * Math.PI * f / sr;
+    for (let i = i0; i < i1; i++) {
+      const k = i - i0, t = k / sr;
+      const env = t < 0.012 ? t / 0.012 : Math.exp(-(t - 0.012) * decay);
+      const ph = w * k;
+      buf[i] += amp * env * (Math.sin(ph) + h2 * Math.sin(2 * ph) + h3 * Math.sin(3 * ph));
+    }
+  };
+  const phrases = [[62, 66, 69, 71, 69, 66], [64, 66, 69, 74, 71, 69], [71, 69, 66, 69, 66, 64], [62, 64, 66, 69, 71, 74], [74, 71, 69, 71, 69, 66], [64, 66, 64, 62, 64, 66], [62]];
+  const rhythm = [1, 1, 1, 1.5, 0.5, 1];
+  phrases.forEach((p, k) => {
+    let t = start + k * 6 * beat;
+    p.forEach((m, j) => {
+      const L = p.length === 1 ? 6 : rhythm[j];
+      add(t, m, Math.min(L * beat + 1.4, 3.4), 0.26, p.length === 1 ? 0.9 : 3.0, 0.35, 0.12);
+      t += L * beat;
+    });
+  });
+  const bass = [50, 45, 47, 43, 50, 45, 47, 43, 50, 43, 45, 45, 50, 50];
+  bass.forEach((m, b) => {
+    const t = start + b * 3 * beat;
+    add(t, m, 3 * beat + 0.6, 0.22, 1.3, 0.25, 0.05);
+    add(t + beat, m + 7, 1.2, 0.06, 4, 0.2, 0);
+    add(t + 2 * beat, m + 12, 1.2, 0.06, 4, 0.2, 0);
+  });
+  let peak = 0;
+  for (let i = 0; i < n; i++) peak = Math.max(peak, Math.abs(buf[i]));
+  const scale = peak ? 0.85 / peak : 1, fadeN = Math.floor(1.2 * sr);
+  const bytes = new ArrayBuffer(44 + n * 2), v = new DataView(bytes);
+  const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  w(36, 'data'); v.setUint32(40, n * 2, true);
+  for (let i = 0; i < n; i++) {
+    const fade = i > n - fadeN ? (n - i) / fadeN : 1;
+    v.setInt16(44 + i * 2, clamp(buf[i] * scale * fade, -1, 1) * 32767 | 0, true);
+  }
+  return new Blob([bytes], { type: 'audio/wav' });
+}
+
+function makeArtwork() {
+  try {
+    const c = document.createElement('canvas');
+    c.width = c.height = 256;
+    const g = c.getContext('2d');
+    const rr = (x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
+    const k = 256 / 60;   // same drawing as the home-screen icon, on a 60-unit grid
+    g.fillStyle = '#1A2240'; g.fillRect(0, 0, 256, 256);
+    g.fillStyle = '#FAC775';
+    g.beginPath(); g.moveTo(10 * k, 23 * k); g.lineTo(49 * k, 17.5 * k); g.lineTo(50.5 * k, 41.5 * k); g.lineTo(11.5 * k, 46 * k); g.closePath(); g.fill();
+    g.lineCap = 'round'; g.lineJoin = 'round';
+    g.strokeStyle = '#1A2240'; g.lineWidth = 4 * k;
+    g.beginPath();
+    g.moveTo(20 * k, 40 * k); g.lineTo(20 * k, 27.5 * k);
+    g.moveTo(20 * k, 31.5 * k); g.bezierCurveTo(20 * k, 25.5 * k, 29 * k, 25.5 * k, 29 * k, 31.5 * k); g.lineTo(29 * k, 40 * k);
+    g.moveTo(29 * k, 31.5 * k); g.bezierCurveTo(29 * k, 25.5 * k, 38 * k, 25.5 * k, 38 * k, 31.5 * k); g.lineTo(38 * k, 40 * k);
+    g.stroke();
+    return c.toDataURL('image/png');
+  } catch (e) { return null; }
+}
+
+/* ---------- state ---------- */
+const MODES = {
+  all: { label: '전체재생', icon: 'i-all', desc: '목록 끝까지 재생하고 멈춰요' },
+  repeatAll: { label: '전체반복', icon: 'i-repeat', desc: '목록이 끝나면 처음부터 다시 재생해요' },
+  shuffle: { label: '셔플', icon: 'i-shuffle', desc: '모든 곡을 무작위로 한 번씩, 다 돌면 새 순서로 계속' },
+  repeatOne: { label: '한곡반복', icon: 'i-repeat1', desc: '지금 곡만 계속 반복해요' },
+  one: { label: '한곡재생', icon: 'i-one', desc: '지금 곡이 끝나면 멈춰요' },
+};
+const RATES = [0.5, 0.75, 0.9, 1, 1.1, 1.25, 1.5, 2];
+const SLEEPS = [10, 15, 20, 30, 45, 60, 90, 120, 150, 180];
+const sleepText = (m) => (m < 60 ? `${m}분` : m % 60 ? `${Math.floor(m / 60)}시간 ${m % 60}분` : `${m / 60}시간`);
+
+const savedMode = store.get('mode', 'all');
+const savedRate = store.get('rate', 1);
+const state = {
+  queue: [], curId: null,
+  mode: MODES[savedMode] ? savedMode : 'all',
+  rate: RATES.includes(savedRate) ? savedRate : 1,
+  tab: store.get('tab', 'queue') === 'lyrics' ? 'lyrics' : 'queue',
+  lyricSrc: store.get('lyricSrc', 'lrc') === 'srt' ? 'srt' : 'lrc',
+  fontSize: clamp(+store.get('fontSize', 20) || 20, 14, 34),
+  fontFam: store.get('fontFam', 'serif') === 'sans' ? 'sans' : 'serif',
+  align: store.get('align', 'center') === 'left' ? 'left' : 'center',
+  autoReturn: store.get('autoReturn', true) !== false,
+  keepAwake: !!store.get('keepAwake', false),
+  offsets: store.get('offsets', {}) || {},
+  select: false, selected: new Set(),
+  sleepAt: 0, sleepEnd: false,
+  history: [], played: new Set(),
+};
+let saved = store.get('session', null);
+const lyricIndex = new Map();   // lower-cased base name -> { lrc: [{dir, file}], srt: [...] }
+const textCache = new WeakMap();
+
+const audio = $('audio');
+const els = {
+  qCount: $('qCount'), tabQueue: $('tabQueue'), tabLyrics: $('tabLyrics'),
+  panelQueue: $('panelQueue'), panelLyrics: $('panelLyrics'),
+  qBar: $('qBar'), selBar: $('selBar'), selActs: $('selActs'), selStart: $('selStart'), selAll: $('selAll'), selCount: $('selCount'), selDone: $('selDone'), selRemove: $('selRemove'), selKeep: $('selKeep'),
+  qScroll: $('qScroll'), qNote: $('qNote'), queue: $('queue'), qEmpty: $('qEmpty'),
+  srcLrc: $('srcLrc'), srcSrt: $('srcSrt'), lyrSettings: $('lyrSettings'), lyrSetLabel: $('lyrSetLabel'),
+  lScroll: $('lScroll'), lWrap: $('lWrap'), lFrame: $('lFrame'), lTop: $('lTop'), lBot: $('lBot'), lNote: $('lNote'), lyrics: $('lyrics'), lEmpty: $('lEmpty'), followBtn: $('followBtn'),
+  toast: $('toast'), toastMsg: $('toastMsg'), toastAct: $('toastAct'),
+  nowTitle: $('nowTitle'), nowSub: $('nowSub'), seek: $('seek'), seekTrack: $('seekTrack'), seekFill: $('seekFill'), seekThumb: $('seekThumb'), tCur: $('tCur'), tRem: $('tRem'),
+  bPrev: $('bPrev'), bBack: $('bBack'), bPlay: $('bPlay'), playIcon: $('playIcon'), bFwd: $('bFwd'), bNext: $('bNext'),
+  bMode: $('bMode'), modeIcon: $('modeIcon'), modeLabel: $('modeLabel'), bRate: $('bRate'), rateLabel: $('rateLabel'), bSleep: $('bSleep'), sleepLabel: $('sleepLabel'),
+  sheetWrap: $('sheetWrap'), sheetTitle: $('sheetTitle'), sheetBody: $('sheetBody'), sheetClose: $('sheetClose'),
+  fileInput: $('fileInput'), dirInput: $('dirInput'),
+};
+
+const byId = (id) => state.queue.find((x) => x.id === id) || null;
+const cur = () => (state.curId ? byId(state.curId) : null);
+const idxOf = (id) => state.queue.findIndex((x) => x.id === id);
+const offKey = (it) => (it.sample ? 'sample' : it.nkey);
+const offsetOf = (it) => (it && +state.offsets[offKey(it)]) || 0;
+
+/* ---------- items & lyrics lookup ---------- */
+function makeItem(file, path) {
+  const p = splitName(path);
+  return { id: uid(), file, path, name: p.base, base: p.base, ext: p.ext, dir: p.dir, key: path + '|' + file.size, nkey: p.name + '|' + file.size, bad: false, sample: false };
+}
+
+function registerLyric(file, p) {
+  const kind = p.ext === 'lrc' ? 'lrc' : 'srt';
+  const k = p.base.toLowerCase();
+  let e = lyricIndex.get(k);
+  if (!e) { e = { lrc: [], srt: [] }; lyricIndex.set(k, e); }
+  e[kind] = e[kind].filter((x) => x.dir !== p.dir);
+  e[kind].push({ dir: p.dir, file });
+}
+
+function findLyrics(it) {
+  if (it.lyr) return it.lyr;
+  const b = it.base.toLowerCase();
+  const pick = (arr) => (arr && arr.length ? (arr.find((x) => x.dir === it.dir) || arr[0]).file : null);
+  const e = lyricIndex.get(b);
+  let lrc = pick(e && e.lrc), srt = pick(e && e.srt);
+  if (!lrc || !srt) {
+    for (const [k, v] of lyricIndex) {   // song.ko.srt, song.en.lrc …
+      if (k.startsWith(b + '.')) { if (!lrc) lrc = pick(v.lrc); if (!srt) srt = pick(v.srt); }
+    }
+  }
+  return { lrc, srt };
+}
+
+function getText(src) {
+  if (typeof src === 'string') return Promise.resolve(src);
+  let p = textCache.get(src);
+  if (!p) { p = readText(src); textCache.set(src, p); }
+  return p;
+}
+
+/* ---------- playback ---------- */
+let curUrl = null, pendingSeek = 0, autoAdvance = false, errorStreak = 0, sampleUrl = null, artUrl = null;
+
+function loadItem(it, opts = {}) {
+  const prevUrl = curUrl;
+  state.curId = it.id;
+  state.played.add(it.id);
+  curUrl = it.url || URL.createObjectURL(it.file);
+  audio.src = curUrl;
+  if (prevUrl && prevUrl !== curUrl && prevUrl !== sampleUrl) URL.revokeObjectURL(prevUrl);
+  audio.defaultPlaybackRate = state.rate;
+  audio.playbackRate = state.rate;
+  pendingSeek = opts.startAt || 0;
+  autoAdvance = !!opts.auto;
+  if (opts.autoplay) doPlay();
+  onTrackChanged();
+}
+
+function go(it, opts = {}) {
+  if (!it) return;
+  const c = cur();
+  if (c && c.id !== it.id) {
+    state.history.push(c.id);
+    if (state.history.length > 300) state.history.shift();
+  }
+  loadItem(it, opts);
+}
+
+function clearPlayer() {
+  audio.pause();
+  audio.removeAttribute('src');
+  audio.load();
+  if (curUrl && curUrl !== sampleUrl) URL.revokeObjectURL(curUrl);
+  curUrl = null;
+  state.curId = null;
+  onTrackChanged();
+}
+
+function doPlay() {
+  const p = audio.play();
+  if (p && p.catch) p.catch((err) => { if (err && err.name === 'NotAllowedError') toast('재생 버튼을 눌러 시작해주세요'); });
+}
+
+function togglePlay() {
+  if (!cur()) {
+    const first = state.queue.find((x) => !x.bad);
+    if (first) go(first, { autoplay: true });
+    return;
+  }
+  if (audio.paused) doPlay(); else audio.pause();
+}
+
+function neighbor(dir, wrap, fromId = state.curId, exclude = null) {
+  const q = state.queue, n = q.length;
+  if (!n) return null;
+  let i = fromId ? idxOf(fromId) : -1;
+  if (i < 0) i = dir > 0 ? -1 : n;
+  for (let step = 1; step <= n; step++) {
+    let j = i + dir * step;
+    if (j < 0 || j >= n) { if (!wrap) return null; j = ((j % n) + n) % n; }
+    const it = q[j];
+    if (it.id !== fromId && !it.bad && !(exclude && exclude.has(it.id))) return it;
+  }
+  return null;
+}
+
+function shufflePick(exclude = null) {
+  const pool = state.queue.filter((x) => !x.bad && x.id !== state.curId && !(exclude && exclude.has(x.id)));
+  if (!pool.length) return null;
+  let fresh = pool.filter((x) => !state.played.has(x.id));
+  if (!fresh.length) {
+    state.played.clear();
+    if (state.curId) state.played.add(state.curId);
+    fresh = pool;
+  }
+  return fresh[Math.floor(Math.random() * fresh.length)];
+}
+
+function nextManual() {
+  if (!cur()) { togglePlay(); return; }
+  const playing = !audio.paused;
+  const it = state.mode === 'shuffle' ? shufflePick() : neighbor(+1, true);
+  if (it) go(it, { autoplay: playing });
+}
+
+function prevManual() {
+  if (!cur()) return;
+  const playing = !audio.paused;
+  if (audio.currentTime > 3) { audio.currentTime = 0; return; }
+  let it = null;
+  if (state.mode === 'shuffle') {
+    while (state.history.length && !it) { const x = byId(state.history.pop()); if (x && !x.bad) it = x; }
+  } else {
+    it = neighbor(-1, state.mode === 'repeatAll');
+  }
+  if (it) loadItem(it, { autoplay: playing }); else audio.currentTime = 0;
+}
+
+function skipBy(sec) {
+  if (!(audio.duration > 0)) return;
+  audio.currentTime = clamp(audio.currentTime + sec, 0, Math.max(0, audio.duration - 0.25));
+  renderProgress(); tickLyrics();
+}
+
+// the next song after the current one ends, per mode; 'same' means replay the current song
+function pickAfterEnd() {
+  const c = cur();
+  switch (state.mode) {
+    case 'one': return null;
+    case 'repeatOne': return 'same';
+    case 'all': return neighbor(+1, false);
+    case 'repeatAll': return neighbor(+1, true) || (c && !c.bad ? 'same' : null);
+    case 'shuffle': return shufflePick();
+  }
+  return null;
+}
+
+audio.addEventListener('ended', () => {
+  if (state.sleepEnd) {
+    setSleep('off');
+    toast('수면 타이머: 곡이 끝나서 멈췄어요');
+    saveSession(true);
+    return;
+  }
+  const next = pickAfterEnd();
+  if (next === 'same') { audio.currentTime = 0; doPlay(); }
+  else if (next) go(next, { autoplay: true, auto: true });
+  else { renderProgress(); saveSession(true); }
+});
+
+audio.addEventListener('error', () => {
+  const c = cur();
+  if (!c || !audio.getAttribute('src')) return;
+  c.bad = true;
+  errorStreak++;
+  renderQueue();
+  toast(`재생할 수 없는 파일이라 넘어갔어요: ${c.name}`);
+  if (autoAdvance && errorStreak < state.queue.length && state.mode !== 'repeatOne' && state.mode !== 'one') {
+    const next = state.mode === 'shuffle' ? shufflePick() : neighbor(+1, state.mode === 'repeatAll');
+    if (next) go(next, { autoplay: true, auto: true });
+  }
+});
+
+audio.addEventListener('playing', () => { errorStreak = 0; });
+audio.addEventListener('loadedmetadata', () => {
+  if (pendingSeek > 0) { audio.currentTime = Math.min(pendingSeek, Math.max(0, audio.duration - 1)); pendingSeek = 0; }
+  renderProgress(); setPos();
+});
+audio.addEventListener('play', () => { renderPlayState(); kick(); syncWake(); });
+audio.addEventListener('pause', () => { renderPlayState(); renderProgress(); syncWake(); saveSession(true); });
+audio.addEventListener('seeked', () => { renderProgress(); tickLyrics(); setPos(); });
+audio.addEventListener('ratechange', setPos);
+audio.addEventListener('timeupdate', () => { renderProgress(); tickLyrics(); checkSleep(); saveSession(false); });
+
+/* ---------- loop for smooth progress + lyrics while visible ---------- */
+let raf = 0;
+function frame() {
+  raf = 0;
+  renderProgress();
+  tickLyrics();
+  if (!audio.paused && document.visibilityState === 'visible') raf = requestAnimationFrame(frame);
+}
+function kick() { if (!raf) raf = requestAnimationFrame(frame); }
+
+/* ---------- now playing + progress ---------- */
+function onTrackChanged() {
+  highlightQueue();
+  renderNow();
+  renderProgress();
+  renderPlayState();
+  updateMediaMeta();
+  loadLyrics();
+  saveSession(true);
+}
+
+function renderNow() {
+  const c = cur();
+  const n = state.queue.length;
+  els.nowTitle.textContent = c ? c.name : n ? '재생할 곡을 골라주세요' : '곡을 추가해주세요';
+  if (!c) { els.nowSub.textContent = ''; return; }
+  const bits = [`${idxOf(c.id) + 1} / ${n}`];
+  if (c.sample) bits.push('예시 곡');
+  else if (c.dir) bits.push(c.dir.split('/').pop());
+  if (c.ext) bits.push(c.ext.toUpperCase());
+  els.nowSub.textContent = bits.join(' · ');
+}
+
+let seeking = false, seekPreview = 0;
+function paintProgress(t, d) {
+  const p = d > 0 ? clamp(t / d, 0, 1) : 0;
+  els.seekFill.style.width = (p * 100) + '%';
+  els.seekThumb.style.left = (p * 100) + '%';
+  els.tCur.textContent = fmt(t);
+  els.tRem.textContent = d > 0 ? '-' + fmt(Math.max(0, d - t) + 0.999) : '0:00';
+  els.seek.setAttribute('aria-valuemax', String(Math.floor(d || 0)));
+  els.seek.setAttribute('aria-valuenow', String(Math.floor(t)));
+  els.seek.setAttribute('aria-valuetext', `${fmt(t)} / ${fmt(d || 0)}`);
+}
+function renderProgress() {
+  if (seeking) return;
+  paintProgress(cur() ? audio.currentTime || 0 : 0, cur() ? audio.duration : 0);
+}
+function renderPlayState() {
+  const playing = !audio.paused && !!cur();
+  document.body.classList.toggle('playing', playing);
+  els.playIcon.setAttribute('href', playing ? '#i-pause' : '#i-play');
+  els.bPlay.setAttribute('aria-label', playing ? '일시정지' : '재생');
+  if (ms) { try { ms.playbackState = playing ? 'playing' : 'paused'; } catch (e) { /* ignore */ } }
+}
+
+function seekFromX(x) {
+  const r = els.seekTrack.getBoundingClientRect();
+  const p = clamp((x - r.left) / r.width, 0, 1);
+  seekPreview = p * (audio.duration || 0);
+  paintProgress(seekPreview, audio.duration);
+}
+function endSeek(commit) {
+  if (!seeking) return;
+  seeking = false;
+  els.seek.classList.remove('active');
+  if (commit && audio.duration > 0) { audio.currentTime = seekPreview; tickLyrics(true); }
+  renderProgress();
+}
+els.seek.addEventListener('pointerdown', (e) => {
+  if (!cur() || !(audio.duration > 0)) return;
+  seeking = true;
+  try { els.seek.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+  els.seek.classList.add('active');
+  seekFromX(e.clientX);
+  e.preventDefault();
+});
+els.seek.addEventListener('pointermove', (e) => { if (seeking) seekFromX(e.clientX); });
+els.seek.addEventListener('pointerup', () => endSeek(true));
+els.seek.addEventListener('pointercancel', () => endSeek(false));
+els.seek.addEventListener('lostpointercapture', () => endSeek(true));
+els.seek.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { skipBy(-5); e.preventDefault(); }
+  else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { skipBy(5); e.preventDefault(); }
+  else if (e.key === 'Home' && audio.duration > 0) { audio.currentTime = 0; e.preventDefault(); }
+});
+
+els.bPlay.addEventListener('click', togglePlay);
+els.bPrev.addEventListener('click', prevManual);
+els.bNext.addEventListener('click', nextManual);
+els.bBack.addEventListener('click', () => skipBy(-10));
+els.bFwd.addEventListener('click', () => skipBy(10));
+
+/* ---------- lock screen controls ---------- */
+const ms = 'mediaSession' in navigator ? navigator.mediaSession : null;
+function updateMediaMeta() {
+  if (!ms || typeof MediaMetadata === 'undefined') return;
+  const c = cur();
+  try {
+    ms.metadata = c ? new MediaMetadata({
+      title: c.name,
+      artist: c.sample ? '예시 곡' : (c.dir ? c.dir.split('/').pop() : ''),
+      album: '<mark>',
+      artwork: artUrl ? [{ src: artUrl, sizes: '256x256', type: 'image/png' }] : [],
+    }) : null;
+  } catch (e) { /* ignore */ }
+}
+function setPos() {
+  if (!ms || !ms.setPositionState || !(audio.duration > 0) || !isFinite(audio.duration)) return;
+  try { ms.setPositionState({ duration: audio.duration, playbackRate: audio.playbackRate || 1, position: clamp(audio.currentTime, 0, audio.duration) }); } catch (e) { /* ignore */ }
+}
+if (ms) {
+  const h = (a, f) => { try { ms.setActionHandler(a, f); } catch (e) { /* unsupported */ } };
+  h('play', () => { if (cur()) doPlay(); else togglePlay(); });
+  h('pause', () => audio.pause());
+  h('previoustrack', prevManual);
+  h('nexttrack', nextManual);
+  h('seekto', (d) => { if (d && isFinite(d.seekTime)) { audio.currentTime = d.seekTime; setPos(); } });
+}
+
+/* ---------- queue ---------- */
+function rowHTML(it) {
+  const ly = findLyrics(it);
+  const isCur = it.id === state.curId, sel = state.selected.has(it.id);
+  const chips = [];
+  if (it.sample) chips.push('<span class="chip ex">예시</span>');
+  if (it.ext) chips.push(`<span class="chip">${esc(it.ext.toUpperCase())}</span>`);
+  if (ly.lrc) chips.push('<span class="chip ly">LRC</span>');
+  if (ly.srt) chips.push('<span class="chip ly">SRT</span>');
+  if (it.bad) chips.push('<span class="chip warn">재생 불가</span>');
+  const lead = state.select
+    ? '<span class="check"><svg><use href="#i-check"/></svg></span>'
+    : '<svg><use href="#i-grip"/></svg>';
+  return `<li class="row${isCur ? ' cur' : ''}${it.bad ? ' bad' : ''}${sel ? ' sel' : ''}" data-id="${it.id}">`
+    + `<span class="grip" aria-hidden="true">${lead}</span>`
+    + `<button class="title-btn" type="button"${state.select ? ` aria-pressed="${sel}"` : ''}><span class="t">${esc(it.name)}</span>`
+    + `<span class="meta"><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>${chips.join('')}${it.dir ? `<span class="dir">${esc(it.dir)}</span>` : ''}</span></button>`
+    + (state.select ? '' : `<button class="rm" type="button" aria-label="${esc(it.name)} 목록에서 빼기"><svg><use href="#i-x"/></svg></button>`)
+    + '</li>';
+}
+
+let drag = null, needRender = false;
+function renderQueue() {
+  if (drag) { needRender = true; return; }
+  const n = state.queue.length;
+  els.qCount.textContent = String(n);
+  els.queue.innerHTML = state.queue.map(rowHTML).join('');
+  els.qEmpty.hidden = n > 0;
+  els.selStart.disabled = n === 0;
+  renderNote();
+  renderSelBar();
+  renderNow();
+}
+
+function highlightQueue() {
+  for (const li of els.queue.children) li.classList.toggle('cur', li.dataset.id === state.curId);
+}
+
+function renderNote() {
+  const hasReal = state.queue.some((x) => !x.sample);
+  const onlySample = state.queue.length > 0 && !hasReal;
+  let html = '';
+  if (!hasReal && saved && Array.isArray(saved.items) && saved.items.length) {
+    html = `<b>지난번 목록 ${saved.items.length}곡</b>${saved.name ? ` · ‘${esc(saved.name)}’ ${fmt(saved.t || 0)}에서 멈춤` : ''}<br>같은 폴더나 파일을 다시 추가하면 순서와 위치를 이어서 불러와요.`;
+  } else if (onlySample) {
+    html = '<b>예시 곡이 들어 있어요.</b> 가사 탭에서 하이라이트와 터치 이동을 먼저 써보세요. 내 음악을 추가하면 예시 곡은 빠져요.';
+  }
+  els.qNote.innerHTML = html;
+  els.qNote.hidden = !html;
+}
+
+function renderSelBar() {
+  const n = state.queue.length, k = state.selected.size;
+  els.qBar.hidden = state.select;
+  els.selBar.hidden = !state.select;
+  els.selActs.hidden = !state.select;
+  els.selCount.textContent = `${k}곡 선택`;
+  els.selAll.textContent = k === n && n > 0 ? '선택 해제' : '전체 선택';
+  els.selRemove.disabled = k === 0;
+  els.selKeep.disabled = k === 0 || k === n;
+}
+
+function setSelect(on) {
+  state.select = on;
+  state.selected.clear();
+  renderQueue();
+}
+function toggleSel(id) {
+  if (state.selected.has(id)) state.selected.delete(id); else state.selected.add(id);
+  const li = els.queue.querySelector(`.row[data-id="${id}"]`);
+  if (li) {
+    li.classList.toggle('sel', state.selected.has(id));
+    const b = li.querySelector('.title-btn');
+    if (b) b.setAttribute('aria-pressed', String(state.selected.has(id)));
+  }
+  renderSelBar();
+}
+
+els.selStart.addEventListener('click', () => setSelect(true));
+els.selDone.addEventListener('click', () => setSelect(false));
+els.selAll.addEventListener('click', () => {
+  if (state.selected.size === state.queue.length) state.selected.clear();
+  else state.queue.forEach((x) => state.selected.add(x.id));
+  renderQueue();
+});
+els.selRemove.addEventListener('click', () => { const ids = [...state.selected]; state.select = false; state.selected.clear(); removeIds(ids); });
+els.selKeep.addEventListener('click', () => { const keep = state.selected; const ids = state.queue.filter((x) => !keep.has(x.id)).map((x) => x.id); state.select = false; state.selected = new Set(); removeIds(ids); });
+
+els.queue.addEventListener('click', (e) => {
+  const row = e.target.closest('.row');
+  if (!row) return;
+  const it = byId(row.dataset.id);
+  if (!it) return;
+  if (state.select) { toggleSel(it.id); return; }
+  if (e.target.closest('.rm')) { removeIds([it.id]); return; }
+  if (e.target.closest('.title-btn')) {
+    if (it.id === state.curId) { if (audio.paused) doPlay(); }
+    else go(it, { autoplay: true });
+  }
+});
+
+function removeIds(ids) {
+  const rm = new Set(ids.filter((id) => byId(id)));
+  if (!rm.size) { renderQueue(); return; }
+  const before = state.queue.slice();
+  const c = cur();
+  const curGone = !!(c && rm.has(c.id));
+  const playing = !audio.paused;
+  let next = null;
+  if (curGone) next = state.mode === 'shuffle' ? shufflePick(rm) : neighbor(+1, state.mode === 'repeatAll', c.id, rm);
+  state.queue = state.queue.filter((x) => !rm.has(x.id));
+  rm.forEach((id) => state.selected.delete(id));
+  state.history = state.history.filter((id) => !rm.has(id));
+  if (curGone) { if (next) loadItem(next, { autoplay: playing }); else clearPlayer(); }
+  if (!state.queue.length) state.select = false;
+  renderQueue();
+  saveSession(true);
+  toast(`${rm.size}곡을 목록에서 뺐어요`, '되돌리기', () => {
+    const beforeIds = new Set(before.map((x) => x.id));
+    state.queue = before.concat(state.queue.filter((x) => !beforeIds.has(x.id)));
+    if (!cur()) { const first = state.queue.find((x) => !x.bad); if (first) loadItem(first); }
+    renderQueue();
+    saveSession(true);
+  });
+}
+
+/* drag to reorder (grip only, so the list still scrolls normally) */
+els.queue.addEventListener('pointerdown', (e) => {
+  if (state.select || drag) return;
+  const g = e.target.closest('.grip');
+  if (!g) return;
+  const row = g.closest('.row');
+  if (!row) return;
+  e.preventDefault();
+  try { g.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+  const r = row.getBoundingClientRect();
+  drag = { row, pid: e.pointerId, y: e.clientY, grab: e.clientY - r.top, h: r.height, raf: 0 };
+  row.classList.add('dragging');
+  drag.raf = requestAnimationFrame(dragFrame);
+});
+window.addEventListener('pointermove', (e) => { if (drag && e.pointerId === drag.pid) drag.y = e.clientY; });
+window.addEventListener('pointerup', (e) => { if (drag && e.pointerId === drag.pid) endDrag(); });
+window.addEventListener('pointercancel', (e) => { if (drag && e.pointerId === drag.pid) endDrag(); });
+
+function dragFrame() {
+  if (!drag) return;
+  const sr = els.qScroll.getBoundingClientRect(), edge = 60;
+  let dy = 0;
+  if (drag.y < sr.top + edge) dy = -Math.ceil((sr.top + edge - drag.y) / 5);
+  else if (drag.y > sr.bottom - edge) dy = Math.ceil((drag.y - (sr.bottom - edge)) / 5);
+  if (dy) els.qScroll.scrollTop += dy;
+  const row = drag.row;
+  const center = drag.y - drag.grab + drag.h / 2;
+  let prev = row.previousElementSibling;
+  while (prev) { const pr = prev.getBoundingClientRect(); if (center < pr.top + pr.height / 2) { row.after(prev); prev = row.previousElementSibling; } else break; }
+  let next = row.nextElementSibling;
+  while (next) { const nr = next.getBoundingClientRect(); if (center > nr.top + nr.height / 2) { row.before(next); next = row.nextElementSibling; } else break; }
+  const natural = els.queue.getBoundingClientRect().top + row.offsetTop;
+  row.style.transform = `translateY(${drag.y - drag.grab - natural}px)`;
+  drag.raf = requestAnimationFrame(dragFrame);
+}
+
+function endDrag() {
+  if (!drag) return;
+  cancelAnimationFrame(drag.raf);
+  const { row } = drag;
+  row.classList.remove('dragging');
+  row.style.transform = '';
+  const map = new Map(state.queue.map((x) => [x.id, x]));
+  state.queue = [...els.queue.children].map((li) => map.get(li.dataset.id)).filter(Boolean);
+  drag = null;
+  if (needRender) { needRender = false; renderQueue(); } else renderNow();
+  saveSession(true);
+}
+
+/* ---------- adding files ---------- */
+function tryRestore(items) {
+  if (!saved || !Array.isArray(saved.items) || !saved.items.length) return null;
+  const pool = items.slice(), ordered = [];
+  let c = null;
+  saved.items.forEach((s, i) => {
+    let j = pool.findIndex((x) => x.key === s.k);
+    if (j < 0) j = pool.findIndex((x) => x.nkey === s.nk);
+    if (j < 0) return;
+    const it = pool.splice(j, 1)[0];
+    ordered.push(it);
+    if (i === saved.cur) c = it;
+  });
+  if (!ordered.length) return null;
+  return { items: ordered.concat(pool), cur: c, t: c ? saved.t || 0 : 0 };
+}
+
+function addFiles(list) {
+  const files = Array.from(list || []);
+  if (!files.length) return;
+  const audios = [];
+  let lyrCount = 0;
+  for (const f of files) {
+    const path = (f.webkitRelativePath || f.name).replace(/^\/+/, '');
+    const p = splitName(path);
+    if (!p.name || p.name.startsWith('.')) continue;          // skip ._song.mp3 and other hidden files
+    if (LYRIC_EXT.has(p.ext)) { registerLyric(f, p); lyrCount++; }
+    else if (AUDIO_EXT.has(p.ext) || /^audio\//.test(f.type || '')) audios.push({ f, path });
+  }
+  audios.sort((a, b) => collator.compare(a.path, b.path));
+  let items = audios.map((a) => makeItem(a.f, a.path));
+
+  let restore = null;
+  if (items.length && !state.queue.some((x) => !x.sample)) {
+    restore = tryRestore(items);
+    if (restore) items = restore.items;
+  }
+  if (items.length) {                                          // real music replaces the sample
+    const s = state.queue.find((x) => x.sample);
+    if (s) {
+      state.queue = state.queue.filter((x) => !x.sample);
+      if (state.curId === s.id) clearPlayer();
+    }
+  }
+  state.queue.push(...items);
+
+  if (restore && restore.cur) loadItem(restore.cur, { startAt: restore.t });
+  else if (!cur() && items.length) loadItem(items[0]);
+  else if (lyrCount) loadLyrics();
+  renderQueue();
+  saveSession(true);
+
+  if (restore && restore.cur) toast(`${items.length}곡 추가 · 지난번 위치(${fmt(restore.t)})부터 이어서 들을 수 있어요`);
+  else if (items.length && lyrCount) toast(`${items.length}곡과 가사 ${lyrCount}개를 추가했어요`);
+  else if (items.length) toast(`${items.length}곡을 추가했어요`);
+  else if (lyrCount) toast(`가사 ${lyrCount}개를 추가했어요. 이름이 같은 곡에 붙어요`);
+  else toast('추가할 수 있는 음악이나 가사 파일이 없어요');
+}
+
+for (const inp of [els.fileInput, els.dirInput]) {
+  inp.addEventListener('change', () => { addFiles(inp.files); inp.value = ''; });
+}
+
+/* ---------- lyrics view ---------- */
+const lyr = { id: null, kind: null, data: null, active: -1, avail: { lrc: null, srt: null }, token: 0 };
+let follow = true, idleTimer = 0, touching = false;
+
+async function loadLyrics() {
+  const c = cur();
+  const token = ++lyr.token;
+  lyr.id = c ? c.id : null; lyr.data = null; lyr.active = -1; lyr.kind = null;
+  if (!c) { lyr.avail = { lrc: null, srt: null }; renderLyrBar(); showLyrEmpty('none'); return; }
+  const av = findLyrics(c);
+  lyr.avail = av;
+  const kind = state.lyricSrc === 'srt' ? (av.srt ? 'srt' : av.lrc ? 'lrc' : null) : (av.lrc ? 'lrc' : av.srt ? 'srt' : null);
+  lyr.kind = kind;
+  renderLyrBar();
+  if (!kind) { showLyrEmpty('missing', c); return; }
+  let text;
+  try { text = await getText(av[kind]); }
+  catch (e) { if (token === lyr.token) showLyrEmpty('error', c); return; }
+  if (token !== lyr.token) return;
+  const data = kind === 'lrc' ? parseLRC(text) : parseSRT(text);
+  if (!data.groups.length) { showLyrEmpty('blank', c); return; }
+  lyr.data = data;
+  renderLyricLines();
+}
+
+function renderLyrBar() {
+  const av = lyr.avail;
+  els.srcLrc.disabled = !av.lrc;
+  els.srcSrt.disabled = !av.srt;
+  els.srcLrc.classList.toggle('on', lyr.kind === 'lrc');
+  els.srcSrt.classList.toggle('on', lyr.kind === 'srt');
+  els.srcLrc.setAttribute('aria-pressed', String(lyr.kind === 'lrc'));
+  els.srcSrt.setAttribute('aria-pressed', String(lyr.kind === 'srt'));
+  const off = offsetOf(cur());
+  els.lyrSetLabel.textContent = off ? `싱크 ${off > 0 ? '+' : '−'}${Math.abs(off).toFixed(1)}초` : '가사 설정';
+}
+
+function showLyrEmpty(kind, c) {
+  const name = c ? esc(c.name) : '';
+  const msgs = {
+    none: ['재생 중인 곡이 없어요', '<p>재생목록에서 곡을 골라주세요.</p>'],
+    missing: [`‘${name}’에 맞는 가사가 없어요`, '<p>곡과 파일 이름이 같은 .lrc나 .srt를 찾아요. 가사 파일만 따로 추가해도 이미 있는 곡에 붙어요.</p><div class="btns"><label class="btn" for="fileInput"><svg><use href="#i-note"/></svg>가사 파일 추가</label></div>'],
+    error: ['가사 파일을 읽지 못했어요', '<p>파일이 손상됐거나 텍스트 파일이 아닐 수 있어요.</p>'],
+    blank: ['가사 파일에 보여줄 내용이 없어요', '<p>LRC는 [00:12.34], SRT는 00:00:12,340 --&gt; 00:00:15,000 같은 시간 표시가 있어야 해요.</p>'],
+  };
+  const [h, body] = msgs[kind];
+  els.lEmpty.innerHTML = `<h3>${h}</h3>${body}`;
+  els.lEmpty.hidden = false;
+  els.lWrap.hidden = true;
+  els.lFrame.classList.remove('show');
+  els.followBtn.hidden = true;
+  els.lyrics.innerHTML = '';
+}
+
+function renderLyricLines() {
+  const d = lyr.data;
+  els.lEmpty.hidden = true;
+  els.lWrap.hidden = false;
+  els.lScroll.classList.toggle('untimed', !d.timed);
+  els.lNote.hidden = d.timed;
+  els.lyrics.innerHTML = d.groups.map((g, i) => {
+    const [main, ...subs] = g.lines;
+    const head = main ? `<span class="main">${esc(main)}</span>` : '<span class="main rest" aria-label="간주">♪ ♪</span>';
+    return `<li class="ln" data-i="${i}">${head}${subs.map((s) => `<span class="sub">${esc(s)}</span>`).join('')}</li>`;
+  }).join('');
+  lyr.active = -1;
+  setFollow(true, true);
+  sizeSpacers();
+  if (d.timed) tickLyrics(true); else els.lScroll.scrollTop = 0;
+}
+
+function sizeSpacers() {
+  const h = els.lScroll.clientHeight;
+  if (!h) return;
+  const s = lyr.data && lyr.data.timed ? Math.ceil(h / 2) : 8;
+  els.lTop.style.height = els.lBot.style.height = s + 'px';
+}
+
+function scrollToActive(instant) {
+  if (els.panelLyrics.hidden || els.lWrap.hidden || !lyr.data || !lyr.data.timed) return;
+  const el = els.lyrics.children[Math.max(0, lyr.active)];
+  if (!el) return;
+  const top = el.offsetTop - els.lScroll.clientHeight / 2 + el.offsetHeight / 2;
+  els.lScroll.scrollTo({ top, behavior: instant || reduceMotion ? 'auto' : 'smooth' });
+}
+
+// The box stays put in the middle of the view; it only resizes to fit the current line
+// and fades out while the lyrics are being scrolled by hand.
+function placeFrame(gap) {
+  const li = lyr.active >= 0 ? els.lyrics.children[lyr.active] : null;
+  const show = !!(li && follow && lyr.data && lyr.data.timed && !els.lWrap.hidden);
+  if (show) els.lFrame.style.height = li.offsetHeight + 'px';
+  els.lFrame.classList.toggle('show', show);
+  els.lFrame.classList.toggle('gap', !!gap);
+}
+
+function tickLyrics(force) {
+  const d = lyr.data;
+  if (!d || !d.timed) return;
+  const c = cur();
+  if (!c || c.id !== lyr.id) return;
+  const now = audio.currentTime - offsetOf(c) + 0.05;
+  const g = d.groups;
+  let lo = 0, hi = g.length - 1, idx = -1;
+  while (lo <= hi) { const mid = (lo + hi) >> 1; if (g[mid].t <= now) { idx = mid; lo = mid + 1; } else hi = mid - 1; }
+  const kids = els.lyrics.children;
+  const gap = idx >= 0 && lyr.kind === 'srt' && isFinite(g[idx].end) && now > g[idx].end;
+  if (idx !== lyr.active || force) {
+    if (lyr.active >= 0 && kids[lyr.active]) kids[lyr.active].classList.remove('on', 'gap');
+    lyr.active = idx;
+    if (idx >= 0 && kids[idx]) kids[idx].classList.add('on');
+    placeFrame(gap);
+    if (follow) scrollToActive(!!force);
+  } else if (gap !== els.lFrame.classList.contains('gap')) {
+    placeFrame(gap);
+  }
+  if (idx >= 0 && kids[idx]) kids[idx].classList.toggle('gap', gap);
+}
+
+function setFollow(on, silent) {
+  follow = on;
+  clearTimeout(idleTimer);
+  els.followBtn.hidden = on || !lyr.data || !lyr.data.timed;
+  els.lScroll.classList.toggle('free', !on);
+  placeFrame(els.lFrame.classList.contains('gap'));
+  if (on && !silent) scrollToActive(false);
+}
+function armIdle() {
+  clearTimeout(idleTimer);
+  if (follow || !state.autoReturn) return;
+  idleTimer = setTimeout(() => { if (!touching) setFollow(true); }, 5000);
+}
+const ls = els.lScroll;
+ls.addEventListener('touchstart', () => { touching = true; clearTimeout(idleTimer); }, { passive: true });
+ls.addEventListener('touchmove', () => { if (follow && lyr.data && lyr.data.timed) setFollow(false); }, { passive: true });
+ls.addEventListener('touchend', () => { touching = false; armIdle(); }, { passive: true });
+ls.addEventListener('touchcancel', () => { touching = false; armIdle(); }, { passive: true });
+ls.addEventListener('wheel', () => { if (lyr.data && lyr.data.timed) { if (follow) setFollow(false); armIdle(); } }, { passive: true });
+ls.addEventListener('scroll', () => { if (!follow && !touching) armIdle(); }, { passive: true });
+els.followBtn.addEventListener('click', () => setFollow(true));
+
+els.lyrics.addEventListener('click', (e) => {
+  const li = e.target.closest('.ln');
+  if (!li || !lyr.data || !lyr.data.timed) return;
+  const g = lyr.data.groups[+li.dataset.i];
+  if (!g || !cur()) return;
+  audio.currentTime = Math.max(0, g.t + offsetOf(cur()));
+  setFollow(true, true);
+  tickLyrics();
+  scrollToActive(false);
+  renderProgress();
+});
+
+els.srcLrc.addEventListener('click', () => { state.lyricSrc = 'lrc'; store.set('lyricSrc', 'lrc'); loadLyrics(); });
+els.srcSrt.addEventListener('click', () => { state.lyricSrc = 'srt'; store.set('lyricSrc', 'srt'); loadLyrics(); });
+
+function applyLyricStyle() {
+  document.documentElement.style.setProperty('--lyric-size', state.fontSize + 'px');
+  els.lScroll.classList.toggle('sans', state.fontFam === 'sans');
+  els.lScroll.classList.toggle('center', state.align === 'center');
+}
+
+/* ---------- tabs ---------- */
+function setTab(t) {
+  state.tab = t;
+  store.set('tab', t);
+  els.tabQueue.setAttribute('aria-selected', String(t === 'queue'));
+  els.tabLyrics.setAttribute('aria-selected', String(t === 'lyrics'));
+  els.panelQueue.hidden = t !== 'queue';
+  els.panelLyrics.hidden = t !== 'lyrics';
+  if (t === 'lyrics') {
+    setFollow(true, true);
+    requestAnimationFrame(() => { sizeSpacers(); tickLyrics(true); scrollToActive(true); placeFrame(els.lFrame.classList.contains('gap')); });
+  }
+  syncWake();
+}
+els.tabQueue.addEventListener('click', () => setTab('queue'));
+els.tabLyrics.addEventListener('click', () => setTab('lyrics'));
+
+/* ---------- screen wake lock (lyrics tab, while playing) ---------- */
+let wakeLock = null;
+async function syncWake() {
+  const want = state.keepAwake && state.tab === 'lyrics' && !audio.paused && document.visibilityState === 'visible';
+  if (want && !wakeLock && navigator.wakeLock) {
+    try {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+    } catch (e) { wakeLock = null; }
+  } else if (!want && wakeLock) {
+    try { await wakeLock.release(); } catch (e) { /* ignore */ }
+    wakeLock = null;
+  }
+}
+
+/* ---------- mode / speed / sleep ---------- */
+function setMode(m) {
+  state.mode = m;
+  store.set('mode', m);
+  if (m === 'shuffle') { state.played.clear(); if (state.curId) state.played.add(state.curId); }
+  renderMode();
+}
+function renderMode() {
+  const m = MODES[state.mode];
+  els.modeIcon.setAttribute('href', '#' + m.icon);
+  els.modeLabel.textContent = m.label;
+  els.bMode.classList.toggle('on', state.mode !== 'all');
+}
+const rateText = (r) => (Number.isInteger(r) ? r.toFixed(1) : String(r)) + '×';
+function setRate(r) {
+  state.rate = r;
+  store.set('rate', r);
+  audio.defaultPlaybackRate = r;
+  audio.playbackRate = r;
+  renderRate();
+}
+function renderRate() {
+  els.rateLabel.textContent = rateText(state.rate);
+  els.bRate.classList.toggle('on', state.rate !== 1);
+}
+function setSleep(v) {
+  if (v === 'off') { state.sleepAt = 0; state.sleepEnd = false; }
+  else if (v === 'end') { state.sleepAt = 0; state.sleepEnd = true; }
+  else { state.sleepAt = Date.now() + v * 60000; state.sleepEnd = false; }
+  renderSleep();
+}
+// compare wall-clock time on every tick, because background timers can be delayed on iPhone
+function checkSleep() {
+  if (state.sleepAt && Date.now() >= state.sleepAt) {
+    state.sleepAt = 0;
+    audio.pause();
+    toast('수면 타이머로 재생을 멈췄어요');
+  }
+  renderSleep();
+}
+function renderSleep() {
+  const on = !!(state.sleepAt || state.sleepEnd);
+  els.bSleep.classList.toggle('on', on);
+  els.sleepLabel.textContent = state.sleepEnd ? '곡 끝나면' : state.sleepAt ? fmt(Math.ceil((state.sleepAt - Date.now()) / 1000)) : '수면 타이머';
+}
+setInterval(checkSleep, 1000);
+
+/* ---------- sheets ---------- */
+let sheetRender = null, lastFocus = null;
+function openSheet(title, render) {
+  lastFocus = document.activeElement;
+  sheetRender = render;
+  els.sheetTitle.innerHTML = title;
+  els.sheetBody.innerHTML = render();
+  els.sheetWrap.hidden = false;
+  els.sheetClose.focus({ preventScroll: true });
+}
+function refreshSheet() { if (sheetRender && !els.sheetWrap.hidden) els.sheetBody.innerHTML = sheetRender(); }
+function closeSheet() {
+  els.sheetWrap.hidden = true;
+  sheetRender = null;
+  if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
+}
+els.sheetClose.addEventListener('click', closeSheet);
+els.sheetWrap.addEventListener('click', (e) => { if (e.target === els.sheetWrap) closeSheet(); });
+
+const modeSheet = () => `<div class="opts">${Object.entries(MODES).map(([k, m]) =>
+  `<button class="opt${state.mode === k ? ' sel' : ''}" type="button" data-act="mode:${k}" aria-pressed="${state.mode === k}"><svg><use href="#${m.icon}"/></svg><span><b>${m.label}${k === 'all' ? ' · 기본' : ''}</b><small>${m.desc}</small></span>${state.mode === k ? '<svg style="width:18px;height:18px;color:var(--accent)"><use href="#i-check"/></svg>' : ''}</button>`).join('')}</div>`;
+
+const rateSheet = () => `<div class="chips">${RATES.map((r) =>
+  `<button class="chipbtn${state.rate === r ? ' sel' : ''}" type="button" data-act="rate:${r}" aria-pressed="${state.rate === r}">${rateText(r)}</button>`).join('')}</div>
+  <p class="hint" style="margin-top:12px">음 높이는 그대로 두고 빠르기만 바뀌어요.</p>`;
+
+const sleepSheet = () => {
+  const on = state.sleepAt || state.sleepEnd;
+  return `<div class="chips c3">${SLEEPS.map((m) =>
+    `<button class="chipbtn" type="button" data-act="sleep:${m}">${sleepText(m)}</button>`).join('')}
+    <button class="chipbtn${state.sleepEnd ? ' sel' : ''}" type="button" data-act="sleep:end">곡 끝나면</button>
+    ${on ? '<button class="chipbtn full" type="button" data-act="sleep:off">타이머 끄기</button>' : ''}</div>
+    <p class="hint" style="margin-top:12px">시간이 되면 재생을 멈춰요. 아이폰은 웹페이지의 볼륨 조절을 막아두어서 소리가 서서히 줄어들지는 않아요.</p>`;
+};
+
+const offText = (o) => (o === 0 ? '0.0초' : `${o > 0 ? '+' : '−'}${Math.abs(o).toFixed(1)}초`);
+const lyrSheet = () => {
+  const c = cur(), off = offsetOf(c), dis = c ? '' : ' disabled';
+  return `<div class="set">
+      <div class="set-h"><b>가사 싱크</b><small>${c ? `‘${esc(c.name)}’에만 적용돼요` : '곡을 고르면 조절할 수 있어요'}</small></div>
+      <div class="stepper">
+        <button class="btn" type="button" data-act="off:-0.5"${dis}>−0.5</button>
+        <button class="btn" type="button" data-act="off:-0.1"${dis}>−0.1</button>
+        <output>${offText(off)}</output>
+        <button class="btn" type="button" data-act="off:0.1"${dis}>+0.1</button>
+        <button class="btn" type="button" data-act="off:0.5"${dis}>+0.5</button>
+      </div>
+      <p class="hint">가사가 노래보다 먼저 나오면 ＋, 늦게 나오면 −로 맞춰요.${off ? ' <button class="btn ghost sm" type="button" data-act="off:reset" style="height:auto;padding:0">0으로 되돌리기</button>' : ''}</p>
+    </div>
+    <div class="set">
+      <div class="set-h"><b>글자 크기</b></div>
+      <div class="stepper">
+        <button class="btn" type="button" data-act="fs:-2" aria-label="글자 작게"${state.fontSize <= 14 ? ' disabled' : ''}>가 −</button>
+        <output>${state.fontSize}px</output>
+        <button class="btn" type="button" data-act="fs:2" aria-label="글자 크게"${state.fontSize >= 34 ? ' disabled' : ''}>가 +</button>
+      </div>
+    </div>
+    <div class="set">
+      <div class="set-h"><b>정렬</b></div>
+      <div class="seg" role="group" aria-label="가사 정렬">
+        <button type="button" data-act="al:center" class="${state.align === 'center' ? 'on' : ''}" aria-pressed="${state.align === 'center'}">가운데</button>
+        <button type="button" data-act="al:left" class="${state.align === 'left' ? 'on' : ''}" aria-pressed="${state.align === 'left'}">왼쪽</button>
+      </div>
+    </div>
+    <div class="set">
+      <div class="set-h"><b>글꼴</b></div>
+      <div class="seg" role="group" aria-label="글꼴">
+        <button type="button" data-act="ff:serif" class="${state.fontFam === 'serif' ? 'on' : ''}" aria-pressed="${state.fontFam === 'serif'}">명조</button>
+        <button type="button" data-act="ff:sans" class="${state.fontFam === 'sans' ? 'on' : ''}" aria-pressed="${state.fontFam === 'sans'}">고딕</button>
+      </div>
+    </div>
+    <div class="sw-row">
+      <div class="set-h"><b>스크롤 후 자동 복귀</b><small>가사를 넘겨 보다가 손을 떼면 5초 뒤 현재 가사로 돌아가요</small></div>
+      <button class="switch" type="button" role="switch" aria-checked="${state.autoReturn}" aria-label="스크롤 후 자동 복귀" data-act="auto"></button>
+    </div>
+    <div class="sw-row">
+      <div class="set-h"><b>가사 볼 때 화면 켜두기</b><small>가사 탭에서 재생 중일 때 화면이 꺼지지 않아요</small></div>
+      <button class="switch" type="button" role="switch" aria-checked="${state.keepAwake}" aria-label="가사 볼 때 화면 켜두기" data-act="wake"></button>
+    </div>`;
+};
+
+els.sheetBody.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-act]');
+  if (!b || b.disabled) return;
+  const [act, val] = b.dataset.act.split(':');
+  if (act === 'mode') { setMode(val); closeSheet(); return; }
+  if (act === 'rate') { setRate(+val); closeSheet(); return; }
+  if (act === 'sleep') { setSleep(val === 'off' || val === 'end' ? val : +val); closeSheet(); return; }
+  if (act === 'off') {
+    const c = cur();
+    if (!c) return;
+    const k = offKey(c);
+    const nv = val === 'reset' ? 0 : Math.round((offsetOf(c) + +val) * 10) / 10;
+    if (nv === 0) delete state.offsets[k]; else state.offsets[k] = clamp(nv, -30, 30);
+    store.set('offsets', state.offsets);
+    renderLyrBar();
+    tickLyrics(true);
+  } else if (act === 'fs') {
+    state.fontSize = clamp(state.fontSize + +val, 14, 34);
+    store.set('fontSize', state.fontSize);
+    applyLyricStyle();
+    tickLyrics(true);
+  } else if (act === 'al') {
+    state.align = val;
+    store.set('align', val);
+    applyLyricStyle();
+    tickLyrics(true);
+  } else if (act === 'ff') {
+    state.fontFam = val;
+    store.set('fontFam', val);
+    applyLyricStyle();
+    tickLyrics(true);
+  } else if (act === 'auto') {
+    state.autoReturn = !state.autoReturn;
+    store.set('autoReturn', state.autoReturn);
+  } else if (act === 'wake') {
+    state.keepAwake = !state.keepAwake;
+    store.set('keepAwake', state.keepAwake);
+    syncWake();
+  }
+  refreshSheet();
+});
+
+els.bMode.addEventListener('click', () => openSheet('재생 모드', modeSheet));
+els.bRate.addEventListener('click', () => openSheet('재생 속도', rateSheet));
+els.bSleep.addEventListener('click', () => {
+  const left = state.sleepAt ? `<small>${fmt(Math.ceil((state.sleepAt - Date.now()) / 1000))} 뒤에 멈춰요</small>` : state.sleepEnd ? '<small>지금 곡이 끝나면 멈춰요</small>' : '';
+  openSheet('수면 타이머' + left, sleepSheet);
+});
+els.lyrSettings.addEventListener('click', () => openSheet('가사 설정', lyrSheet));
+
+/* ---------- toast ---------- */
+let toastTimer = 0, toastFn = null;
+function toast(msg, actLabel, fn) {
+  els.toastMsg.textContent = msg;
+  toastFn = fn || null;
+  els.toastAct.hidden = !fn;
+  if (fn) els.toastAct.textContent = actLabel;
+  els.toast.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { els.toast.hidden = true; toastFn = null; }, fn ? 5000 : 2800);
+}
+els.toastAct.addEventListener('click', () => {
+  const f = toastFn;
+  els.toast.hidden = true;
+  toastFn = null;
+  clearTimeout(toastTimer);
+  if (f) f();
+});
+
+/* ---------- resume where you left off ---------- */
+let lastSave = 0;
+function saveSession(force) {
+  const now = Date.now();
+  if (!force && now - lastSave < 5000) return;
+  lastSave = now;
+  const real = state.queue.filter((x) => !x.sample);
+  if (!real.length) return;                      // keep the last real list for next time
+  const c = cur();
+  const ci = c && !c.sample ? real.indexOf(c) : -1;
+  saved = {
+    items: real.map((x) => ({ k: x.key, nk: x.nkey })),
+    cur: ci,
+    t: ci >= 0 ? Math.floor(audio.currentTime || 0) : 0,
+    name: ci >= 0 ? c.name : '',
+    at: now,
+  };
+  store.set('session', saved);
+}
+window.addEventListener('pagehide', () => saveSession(true));
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') saveSession(true);
+  else { kick(); tickLyrics(true); renderSleep(); }
+  syncWake();
+});
+window.addEventListener('resize', () => { sizeSpacers(); placeFrame(els.lFrame.classList.contains('gap')); if (follow) scrollToActive(true); });
+
+/* ---------- keyboard (for iPad / desktop) ---------- */
+document.addEventListener('keydown', (e) => {
+  if (!els.sheetWrap.hidden) { if (e.key === 'Escape') closeSheet(); return; }
+  const tag = (e.target && e.target.tagName) || '';
+  if (/INPUT|TEXTAREA|SELECT/.test(tag) || e.target === els.seek) return;
+  if (e.key === ' ' && tag !== 'BUTTON') { e.preventDefault(); togglePlay(); }
+  else if (e.key === 'ArrowLeft') skipBy(-10);
+  else if (e.key === 'ArrowRight') skipBy(10);
+});
+
+/* ---------- start ---------- */
+applyLyricStyle();
+renderMode();
+renderRate();
+renderSleep();
+artUrl = makeArtwork();
+try {
+  sampleUrl = URL.createObjectURL(buildSampleWav());
+  const sample = { id: uid(), sample: true, name: '<mark> 예시 곡', base: '<mark> 예시 곡', ext: 'wav', dir: '', key: 'sample', nkey: 'sample', url: sampleUrl, lyr: { lrc: SAMPLE_LRC, srt: SAMPLE_SRT }, bad: false };
+  state.queue.push(sample);
+  loadItem(sample);
+} catch (e) { /* sample is optional */ }
+renderQueue();
+setTab(state.tab);
+renderLyrBar();
+})();
+</script>
+
+</body>
+</html>
