@@ -603,7 +603,7 @@ const state = {
   queue: [], curId: null,
   mode: MODES[savedMode] ? savedMode : 'all',
   rate: RATES.includes(savedRate) ? savedRate : 1,
-  tab: store.get('tab', 'queue') === 'lyrics' ? 'lyrics' : 'queue',
+  tab: 'queue',   // always open on the queue: files don't survive a reload, so a remembered lyrics tab would just be empty
   lyricSrc: store.get('lyricSrc', 'lrc') === 'srt' ? 'srt' : 'lrc',
   fontSize: clamp(+store.get('fontSize', 20) || 20, 14, 34),
   fontFam: store.get('fontFam', 'serif') === 'sans' ? 'sans' : 'serif',
@@ -1681,7 +1681,6 @@ function applyLyricStyle() {
 /* ---------- tabs ---------- */
 function setTab(t) {
   state.tab = t;
-  store.set('tab', t);
   els.tabQueue.setAttribute('aria-selected', String(t === 'queue'));
   els.tabLyrics.setAttribute('aria-selected', String(t === 'lyrics'));
   els.panelQueue.hidden = t !== 'queue';
