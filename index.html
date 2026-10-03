@@ -67,7 +67,7 @@ svg{display:block}
 .logo i{font-style:normal;font-weight:600;color:var(--muted)}
 .logo b{position:relative;isolation:isolate;margin:0 4px;padding:0 3px;color:var(--brand-ink);line-height:1.55}
 .logo b::before{content:"";position:absolute;inset:1px -3px 0;z-index:-1;background:var(--brand);border-radius:2px 6px 3px 7px;transform:skewX(-12deg) rotate(-3deg)}
-.tabs{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:3px;padding:3px;border-radius:10px;background:var(--sunk)}
+.tabs{flex:1;display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:3px;padding:3px;border-radius:10px;background:var(--sunk)}
 .tab{height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;font-weight:600;color:var(--muted)}
 .tab[aria-selected="true"]{background:var(--raise);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .tab .n{font-size:12px;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums}
@@ -155,6 +155,26 @@ body.playing .eq i{animation:eq .8s ease-in-out infinite alternate}
 .follow{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:4;height:38px;padding:0 16px 0 12px;border-radius:19px;display:inline-flex;align-items:center;gap:7px;background:var(--accent);color:var(--on-accent);font-size:13.5px;font-weight:700;box-shadow:var(--shadow);white-space:nowrap}
 .follow svg{width:17px;height:17px}
 main:has(.toast:not([hidden])) .follow{bottom:72px}
+
+/* album: the work's cover, its title in full, the song quietly under it, then the ways out */
+.album{width:100%;max-width:440px;margin:0 auto;padding:10px 16px 24px;display:flex;flex-direction:column;gap:16px}
+.cover{position:relative;width:100%;aspect-ratio:4/3;border-radius:14px;overflow:hidden;background:var(--sunk)}
+.cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cover .ph{display:none;position:absolute;left:50%;top:50%;width:56px;height:56px;margin:-28px 0 0 -28px;color:var(--faint)}
+.cover.none .ph{display:block}
+.cover.has{box-shadow:0 10px 26px rgba(21,25,37,.22)}
+.a-info{display:flex;flex-direction:column;gap:16px}
+.a-title{margin:0;font-size:21px;font-weight:700;line-height:1.35;word-break:keep-all;overflow-wrap:anywhere}
+.a-song{margin:6px 0 0;display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--muted)}
+.a-song span:last-child{min-width:0;overflow-wrap:anywhere}
+body.playing .a-song .eq{display:inline-flex}
+.a-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.chip.code{font-family:var(--font-code);letter-spacing:0}
+.a-links{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.a-links.one{grid-template-columns:1fr}
+.a-links .btn{height:42px;min-width:0;justify-content:center;text-decoration:none}
+.a-links .btn span{overflow:hidden;text-overflow:ellipsis}
+.a-links .btn .ext{width:13px;height:13px;color:var(--faint)}
 
 /* toast */
 .toast{position:absolute;left:16px;right:16px;bottom:12px;z-index:10;max-width:440px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:11px 12px 11px 14px;border-radius:12px;background:var(--fg);color:var(--bg);font-size:13.5px;box-shadow:var(--shadow)}
@@ -269,6 +289,8 @@ main:has(.toast:not([hidden])) .follow{bottom:72px}
     <symbol id="i-cloud" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></symbol>
     <symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></symbol>
     <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></symbol>
+    <symbol id="i-bag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></symbol>
+    <symbol id="i-ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M8 7h9v9"/></symbol>
     <symbol id="i-locate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></symbol>
   </defs>
 </svg>
@@ -278,6 +300,7 @@ main:has(.toast:not([hidden])) .follow{bottom:72px}
     <div class="logo" role="img" aria-label="mark"><i>&lt;</i><b>mark</b><i>&gt;</i></div>
     <div class="tabs" role="tablist" aria-label="화면 전환">
       <button class="tab" role="tab" id="tabQueue" aria-controls="panelQueue" aria-selected="true" type="button">재생목록 <span class="n" id="qCount">0</span></button>
+      <button class="tab" role="tab" id="tabAlbum" aria-controls="panelAlbum" aria-selected="false" type="button">앨범</button>
       <button class="tab" role="tab" id="tabLyrics" aria-controls="panelLyrics" aria-selected="false" type="button">가사</button>
     </div>
   </header>
@@ -312,6 +335,16 @@ main:has(.toast:not([hidden])) .follow{bottom:72px}
           </div>
           <p class="fine">폴더 선택은 iOS 18.4 이상에서 돼요. 그보다 낮으면 파일 추가에서 곡과 가사 파일을 여러 개 함께 고르세요.</p>
         </div>
+      </div>
+    </section>
+
+    <section class="panel" id="panelAlbum" role="tabpanel" aria-labelledby="tabAlbum" hidden>
+      <div class="scroll">
+        <div class="album" id="album">
+          <div class="cover" id="aCover"><img id="aImg" alt="앨범 표지" referrerpolicy="no-referrer" hidden><svg class="ph" aria-hidden="true"><use href="#i-note"/></svg></div>
+          <div class="a-info" id="aInfo"></div>
+        </div>
+        <div class="empty" id="aEmpty" hidden><h3>재생 중인 곡이 없어요</h3><p>재생목록에서 곡을 골라주세요.</p></div>
       </div>
     </section>
 
@@ -623,8 +656,9 @@ let textCache = new WeakMap();
 
 const audio = $('audio');
 const els = {
-  qCount: $('qCount'), tabQueue: $('tabQueue'), tabLyrics: $('tabLyrics'),
-  panelQueue: $('panelQueue'), panelLyrics: $('panelLyrics'),
+  qCount: $('qCount'), tabQueue: $('tabQueue'), tabAlbum: $('tabAlbum'), tabLyrics: $('tabLyrics'),
+  panelQueue: $('panelQueue'), panelAlbum: $('panelAlbum'), panelLyrics: $('panelLyrics'),
+  album: $('album'), aCover: $('aCover'), aImg: $('aImg'), aInfo: $('aInfo'), aEmpty: $('aEmpty'),
   qBar: $('qBar'), selBar: $('selBar'), selActs: $('selActs'), selStart: $('selStart'), selAll: $('selAll'), selCount: $('selCount'), selDone: $('selDone'), selRemove: $('selRemove'), selKeep: $('selKeep'),
   qScroll: $('qScroll'), qNote: $('qNote'), queue: $('queue'), qEmpty: $('qEmpty'),
   srcLrc: $('srcLrc'), srcSrt: $('srcSrt'), lyrSettings: $('lyrSettings'), lyrSetLabel: $('lyrSetLabel'),
@@ -712,12 +746,12 @@ const blobJobs = new Map();
 const saveRepoCfg = () => store.set('repo', repo.cfg);
 const repoReady = () => !!(repo.cfg.on && repo.cfg.token && repo.cfg.name);
 
-// IndexedDB key-value store for the file list ('tree') and fetched files ('b:<sha>'); memory only if it is unavailable
-const kv = (() => {
+// IndexedDB key-value store; memory only if it is unavailable
+function idbKV(name) {
   const mem = new Map();
   let dbp = null;
   const open = () => dbp || (dbp = new Promise((res, rej) => {
-    const r = indexedDB.open('mark-subs', 1);
+    const r = indexedDB.open(name, 1);
     r.onupgradeneeded = () => r.result.createObjectStore('kv');
     r.onsuccess = () => res(r.result);
     r.onerror = () => rej(r.error);
@@ -735,9 +769,13 @@ const kv = (() => {
     async set(k, v) { mem.set(k, v); try { await run('readwrite', (s) => s.put(v, k)); } catch (e) { /* memory only */ } },
     async clear() { mem.clear(); try { await run('readwrite', (s) => s.clear()); } catch (e) { /* ignore */ } },
   };
-})();
+}
+// the subtitle file list ('tree') and fetched files ('b:<sha>')
+const kv = idbKV('mark-subs');
 
 const rp = (name = repo.cfg.name) => '/repos/' + name.split('/').map(encodeURIComponent).join('/');
+const urlPath = (s) => s.split('/').map(encodeURIComponent).join('/');
+const repoFolderUrl = (dir) => `https://github.com/${urlPath(repo.cfg.name)}/tree/${urlPath(repo.cfg.branch || 'HEAD')}/${urlPath(dir)}`;
 async function gh(path, token) {
   let r;
   try {
@@ -1148,6 +1186,7 @@ function onTrackChanged() {
 }
 
 function renderNow() {
+  renderAlbum();
   const c = cur();
   const n = state.queue.length;
   els.nowTitle.textContent = c ? c.name : n ? '재생할 곡을 골라주세요' : '곡을 추가해주세요';
@@ -1679,12 +1718,126 @@ function applyLyricStyle() {
 }
 
 /* ---------- tabs ---------- */
+/* ---------- album ---------- */
+// folders that only say what is inside (…/mp3/, …/WAV版/, …/SEなし/) don't name the album
+const FORMAT_DIR = /^(?:(?:mp3|wav|flac|m4a|aac|alac|ogg|opus|wma|hi-?res|audio)(?![a-z])|ハイレゾ|(?:音声|音源)(?:ファイル|データ)?版?$|本編$|se ?(?:あり|有り|なし|無し|on|off)(?![a-z]))/;
+const stripCode = (s) => s.replace(/[[(【［（]?\s*rj\d{6}(?:\d{2})?\s*[\])】］）]?/gi, ' ')
+  .replace(/\s{2,}/g, ' ').replace(/^[\s_.\-–—・:：]+|[\s_.\-–—・:：]+$/g, '');
+
+// A song's work: its RJ code (file name first, then its folders from the inside out, then its subtitle folder)
+// and a title: the subtitle folder named after the work, else the local folder without the code
+function workOf(it) {
+  const segs = it.dir ? it.dir.split('/') : [];
+  const r = it.repo && repo.cfg.on ? it.repo : null;
+  let code = codeOf(it.base), at = -1;
+  for (let i = segs.length - 1; i >= 0 && !code; i--) if ((code = codeOf(segs[i]))) at = i;
+  const rcode = r ? codeOf(r.name) : '';
+  if (!code) code = rcode;                       // matched by name inside a work's subtitle folder
+  let title = code && rcode === code ? stripCode(r.name.replace(/_\d+$/, '')) : '';
+  for (let i = segs.length - 1; i >= Math.max(at, 0) && !title; i--) if (!FORMAT_DIR.test(normKey(segs[i]))) title = stripCode(segs[i]);
+  return {
+    code,
+    title: title || (code ? code.toUpperCase() : it.name),
+    store: code ? `https://www.dlsite.com/maniax/work/=/product_id/${code.toUpperCase()}.html` : '',
+    subs: r && repo.cfg.name ? repoFolderUrl(r.dir) : '',
+  };
+}
+
+// DLsite keeps a work's main image under its code rounded up to the thousand: RJ01014447 -> RJ01015000/
+function coverUrl(code) {
+  const d = code.slice(2), dir = String(Math.ceil(+d / 1000) * 1000).padStart(d.length, '0');
+  return `https://img.dlsite.jp/modpub/images2/work/doujin/RJ${dir}/${code.toUpperCase()}_img_main.jpg`;
+}
+const coverKV = idbKV('mark-covers');
+const covers = new Map();       // RJ code -> object URL, or null when DLsite has no image for it
+const coverJobs = new Map();
+// fetched once and kept, so the cover also shows offline
+function loadCover(code) {
+  if (covers.has(code)) return Promise.resolve(covers.get(code));
+  let p = coverJobs.get(code);
+  if (p) return p;
+  p = (async () => {
+    let hit = await coverKV.get(code);
+    if (!hit) {
+      const r = await fetch(coverUrl(code), { referrerPolicy: 'no-referrer' });
+      const type = r.headers.get('content-type') || '';
+      if (r.status === 404 || (r.ok && !type.startsWith('image/'))) { covers.set(code, null); return null; }
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      hit = { type, buf: await r.arrayBuffer() };
+      coverKV.set(code, hit);
+    }
+    const url = URL.createObjectURL(new Blob([hit.buf], { type: hit.type }));
+    covers.set(code, url);
+    return url;
+  })();
+  coverJobs.set(code, p);
+  p.then(() => coverJobs.delete(code), () => coverJobs.delete(code));
+  return p;
+}
+
+let coverCode = null, coverTok = 0, coverFailed = false;
+function showCover(code, retry) {
+  if (code === coverCode && !(retry && coverFailed)) return;
+  coverCode = code;
+  coverFailed = false;
+  const tok = ++coverTok, box = els.aCover, img = els.aImg;
+  img.hidden = true;
+  img.removeAttribute('src');
+  box.classList.remove('has');
+  box.classList.toggle('none', !code);
+  if (!code) return;
+  loadCover(code).then((url) => {
+    if (tok !== coverTok) return;
+    if (url) img.src = url; else box.classList.add('none');
+  }, () => {
+    if (tok === coverTok) img.src = coverUrl(code);   // couldn't keep a copy: let the image load directly
+  });
+}
+const retryCover = () => { if (coverFailed) showCover(coverCode, true); };
+els.aImg.addEventListener('load', () => { els.aImg.hidden = false; els.aCover.classList.add('has'); });
+els.aImg.addEventListener('error', () => {
+  if (!els.aImg.getAttribute('src')) return;
+  els.aImg.hidden = true;
+  els.aCover.classList.add('none');
+  coverFailed = true;   // offline: try again when the tab is opened or the connection is back
+});
+window.addEventListener('online', retryCover);
+
+const outLink = (href, icon, label) => `<a class="btn" href="${esc(href)}" target="_blank" rel="noopener noreferrer"><svg aria-hidden="true"><use href="#${icon}"/></svg><span>${label}</span><svg class="ext" aria-hidden="true"><use href="#i-ext"/></svg></a>`;
+let albumHTML = '';
+// the dock already shows the song big, so here the work's title is big and never cut, the song small under it
+function renderAlbum() {
+  const c = cur(), w = c ? workOf(c) : null;
+  els.album.hidden = !c;
+  els.aEmpty.hidden = !!c;
+  showCover(w ? w.code : '');
+  let html = '';
+  if (c) {
+    const ly = findLyrics(c), chips = [], links = [];
+    if (w.code && w.title !== w.code.toUpperCase()) chips.push(`<span class="chip code">${esc(w.code.toUpperCase())}</span>`);
+    if (ly.lrc) chips.push('<span class="chip ly">LRC</span>');
+    if (ly.srt) chips.push('<span class="chip ly">SRT</span>');
+    if (ly.ja) chips.push('<span class="chip ly">日</span>');
+    const both = !!(w.store && w.subs);   // side by side: short names, so neither is cut
+    if (w.store) links.push(outLink(w.store, 'i-bag', both ? 'DLsite' : 'DLsite에서 보기'));
+    if (w.subs) links.push(outLink(w.subs, 'i-cloud', both ? '자막 폴더' : '자막 폴더 열기'));
+    html = `<div><h2 class="a-title">${esc(w.title)}</h2>`
+      + (w.title !== c.name ? `<p class="a-song"><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span><span>${esc(c.name)}</span></p>` : '')
+      + (chips.length ? `<div class="a-chips">${chips.join('')}</div>` : '') + '</div>'
+      + (links.length ? `<div class="a-links${links.length === 1 ? ' one' : ''}">${links.join('')}</div>` : '');
+  }
+  if (html !== albumHTML) { albumHTML = html; els.aInfo.innerHTML = html; }
+}
+
 function setTab(t) {
   state.tab = t;
   els.tabQueue.setAttribute('aria-selected', String(t === 'queue'));
+  els.tabAlbum.setAttribute('aria-selected', String(t === 'album'));
   els.tabLyrics.setAttribute('aria-selected', String(t === 'lyrics'));
   els.panelQueue.hidden = t !== 'queue';
+  els.panelAlbum.hidden = t !== 'album';
   els.panelLyrics.hidden = t !== 'lyrics';
+  if (t === 'album') retryCover();
   if (t === 'lyrics') {
     setFollow(true, true);
     requestAnimationFrame(() => { sizeSpacers(); tickLyrics(true); scrollToActive(true); placeFrame(els.lFrame.classList.contains('gap')); });
@@ -1692,6 +1845,7 @@ function setTab(t) {
   syncWake();
 }
 els.tabQueue.addEventListener('click', () => setTab('queue'));
+els.tabAlbum.addEventListener('click', () => setTab('album'));
 els.tabLyrics.addEventListener('click', () => setTab('lyrics'));
 
 /* ---------- screen wake lock (lyrics tab, while playing) ---------- */
