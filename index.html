@@ -736,7 +736,7 @@ function getText(src) {
 const repo = {
   cfg: Object.assign({ name: '', token: '', branch: '', on: true }, store.get('repo', null) || {}),
   picks: store.get('repoPick', {}) || {},   // RJ code (or local folder) -> repository folder, when several fit
-  tree: null, idx: null, checkedAt: 0,
+  tree: null, idx: null, ko: null, checkedAt: 0,
   status: 'idle', msg: '', dl: null,
   loading: null, syncing: null, fetching: Promise.resolve(),
 };
@@ -876,7 +876,7 @@ function matchRepo(list) {
     const alts = [];
     for (const c of cands) if (!alts.some((a) => a.dir === c.w.dir)) alts.push({ dir: c.w.dir, name: c.w.name });
     alts.sort((a, b) => collator.compare(a.name, b.name));   // same order in the settings whichever is picked
-    it.repo = { dir: top.w.dir, name: top.w.name, how: top.how, group, alts, lrc: top.tr.lrc, srt: top.tr.srt, ja: top.tr.ja };
+    it.repo = { dir: top.w.dir, name: top.w.name, track: top.tr.name, how: top.how, group, alts, lrc: top.tr.lrc, srt: top.tr.srt, ja: top.tr.ja };
   }
   lyricVer++;
 }
@@ -917,9 +917,48 @@ function repoText(sha) {
   return p;
 }
 
+/* Korean titles the repository lists in its README.md files (written by its subtitle tools):
+   subtitles/README.md      <!-- original folder name -->  then  **Korean title**\
+   subtitles/<folder>/README.md   1. Korean title <!-- original track name -->
+   An HTML comment can't hold '--', so the tools write it as '- -'. Titles still marked '번역 필요: ' are left out. */
+const MD_KEY = /^<!--\s*(.*?)\s*-->\s*$/;
+const MD_WORK = /^\*\*(?:\[((?:\\.|[^\]\\])*)\]\([^)]*\)|((?:\\.|[^*\\])*))\*\*\\?\s*$/;
+const MD_ITEM = /^\d+\.\s+(.*?)\s*(?:<!--\s*(.*?)\s*-->)?\s*$/;
+const koKey = (name) => normKey(String(name).replace(/--/g, '- -'));
+function parseKoTitles(text) {
+  const out = [];
+  let key = null, m;
+  for (const line of text.replace(/\r\n?/g, '\n').split('\n')) {
+    if ((m = MD_KEY.exec(line))) { key = m[1]; continue; }
+    if ((m = MD_WORK.exec(line))) { if (key != null) out.push([key, m[1] != null ? m[1] : m[2]]); key = null; continue; }
+    if ((m = MD_ITEM.exec(line)) && m[2]) out.push([m[2], m[1].replace(/\s+·\s+음성 \d+개$/, '')]);
+  }
+  return out.map(([k, t]) => [normKey(k), t.replace(/\\(.)/g, '$1').trim()]).filter(([, t]) => t && !t.startsWith('번역 필요:'));
+}
+// the list of works sits next to the work folders; a folder's own README.md names its tracks
+async function readKoTitles(tree, files) {
+  const root = files.some(([p]) => p.startsWith('subtitles/')) ? 'subtitles/' : '';
+  const ko = { root, works: [], tracks: [] };
+  for (const x of tree) {
+    if (x.type !== 'blob' || !x.path.startsWith(root) || !/^(?:[^/]+\/)?README\.md$/i.test(x.path.slice(root.length))) continue;
+    const pairs = parseKoTitles(await repoText(x.sha));
+    const dir = x.path.slice(0, x.path.lastIndexOf('/'));
+    if (x.path.slice(root.length).includes('/')) for (const [k, t] of pairs) ko.tracks.push([dir, k, t]);
+    else ko.works.push(...pairs);
+  }
+  return ko;
+}
+function koTitles(r) {
+  const ko = repo.ko;
+  if (!ko || !r) return {};
+  const top = r.dir.startsWith(ko.root) ? r.dir.slice(ko.root.length).split('/')[0] : '';
+  return { work: ko.works.get(koKey(top)) || '', track: ko.tracks.get(r.dir + '\n' + koKey(r.track)) || '' };
+}
+
 function applyTree(t) {
   repo.tree = t;
   repo.idx = buildRepoIndex(t.files);
+  repo.ko = t.ko ? { root: t.ko.root, works: new Map(t.ko.works), tracks: new Map(t.ko.tracks.map(([d, k, v]) => [d + '\n' + k, v])) } : null;
   repo.checkedAt = t.at || 0;
 }
 async function repoLoadCached() {
@@ -937,17 +976,20 @@ function repoSync(force) {
     try {
       await repo.loading;
       if (!repo.cfg.token) return false;
-      if (!force && repo.idx && Date.now() - repo.checkedAt < 10 * 60000) return false;
+      if (!force && repo.idx && repo.tree.ko && Date.now() - repo.checkedAt < 10 * 60000) return false;
       const { name, token } = repo.cfg;
       setRepoStatus('busy');
       const branch = repo.cfg.branch || (await gh(rp(name), token)).default_branch || 'main';
       const head = await gh(`${rp(name)}/branches/${encodeURIComponent(branch)}`, token);
       let changed = false;
-      if (!repo.tree || repo.tree.commit !== head.commit.sha) {
+      if (!repo.tree || repo.tree.commit !== head.commit.sha || !repo.tree.ko) {   // a list kept before titles were read: once more
         const t = await gh(`${rp(name)}/git/trees/${head.commit.commit.tree.sha}?recursive=1`, token);
         if (repo.cfg.name !== name) return false;   // switched to another repository meanwhile
         const files = t.tree.filter((x) => x.type === 'blob' && /\.(lrc|srt|vtt)$/i.test(x.path)).map((x) => [x.path, x.sha]);
-        applyTree({ repo: name, commit: head.commit.sha, at: Date.now(), files });
+        let ko;
+        try { ko = await readKoTitles(t.tree, files); } catch (e) { /* no titles this time; read again next check */ }
+        if (repo.cfg.name !== name) return false;
+        applyTree({ repo: name, commit: head.commit.sha, at: Date.now(), files, ko });
         changed = true;
       } else {
         repo.tree.at = repo.checkedAt = Date.now();
@@ -1725,7 +1767,8 @@ const stripCode = (s) => s.replace(/[[(【［（]?\s*rj\d{6}(?:\d{2})?\s*[\])】
   .replace(/\s{2,}/g, ' ').replace(/^[\s_.\-–—・:：]+|[\s_.\-–—・:：]+$/g, '');
 
 // A song's work: its RJ code (file name first, then its folders from the inside out, then its subtitle folder)
-// and a title: the subtitle folder named after the work, else the local folder without the code
+// and a title: the Korean one the repository lists, else the subtitle folder named after the work,
+// else the local folder without the code
 function workOf(it) {
   const segs = it.dir ? it.dir.split('/') : [];
   const r = it.repo && repo.cfg.on ? it.repo : null;
@@ -1733,11 +1776,13 @@ function workOf(it) {
   for (let i = segs.length - 1; i >= 0 && !code; i--) if ((code = codeOf(segs[i]))) at = i;
   const rcode = r ? codeOf(r.name) : '';
   if (!code) code = rcode;                       // matched by name inside a work's subtitle folder
-  let title = code && rcode === code ? stripCode(r.name.replace(/_\d+$/, '')) : '';
+  const ko = koTitles(r);                        // Korean titles listed in the repository come first
+  let title = ko.work ? stripCode(ko.work) : code && rcode === code ? stripCode(r.name.replace(/_\d+$/, '')) : '';
   for (let i = segs.length - 1; i >= Math.max(at, 0) && !title; i--) if (!FORMAT_DIR.test(normKey(segs[i]))) title = stripCode(segs[i]);
   return {
     code,
     title: title || (code ? code.toUpperCase() : it.name),
+    song: ko.track || it.name,
     store: code ? `https://www.dlsite.com/maniax/work/=/product_id/${code.toUpperCase()}.html` : '',
     subs: r && repo.cfg.name ? repoFolderUrl(r.dir) : '',
   };
@@ -1822,7 +1867,7 @@ function renderAlbum() {
     if (w.store) links.push(outLink(w.store, 'i-bag', both ? 'DLsite' : 'DLsite에서 보기'));
     if (w.subs) links.push(outLink(w.subs, 'i-cloud', both ? '자막 폴더' : '자막 폴더 열기'));
     html = `<div><h2 class="a-title">${esc(w.title)}</h2>`
-      + (w.title !== c.name ? `<p class="a-song"><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span><span>${esc(c.name)}</span></p>` : '')
+      + (w.title !== w.song ? `<p class="a-song"><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span><span>${esc(w.song)}</span></p>` : '')
       + (chips.length ? `<div class="a-chips">${chips.join('')}</div>` : '') + '</div>'
       + (links.length ? `<div class="a-links${links.length === 1 ? ' one' : ''}">${links.join('')}</div>` : '');
   }
@@ -2084,7 +2129,7 @@ async function repoAction(a) {
     let info;
     try { info = await gh(rp(name), token); } catch (e) { setRepoStatus('err', e.message); return; }
     if (name !== repo.cfg.name) {   // another repository: drop what was kept from the old one
-      repo.tree = repo.idx = null;
+      repo.tree = repo.idx = repo.ko = null;
       await kv.clear();
       textCache = new WeakMap();
       repoSrcs.clear();
@@ -2114,7 +2159,7 @@ async function repoAction(a) {
     if (!confirm('연결을 끊고 이 기기에 받아 둔 자막을 지울까요? 다시 연결하려면 토큰을 새로 넣어야 해요.')) return;
     repo.cfg = { name: repo.cfg.name, token: '', branch: '', on: true };
     saveRepoCfg();
-    repo.tree = repo.idx = null;
+    repo.tree = repo.idx = repo.ko = null;
     repo.checkedAt = 0;
     await kv.clear();
     textCache = new WeakMap();
