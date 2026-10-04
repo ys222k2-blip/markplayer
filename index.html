@@ -51,6 +51,7 @@
 }
 [hidden]{display:none!important}
 html{height:100%;box-sizing:border-box}
+html,body{overscroll-behavior-x:none}   /* no sideways overscroll: Chrome's swipe back/forward would leave the page and drop the queue */
 *,*::before,*::after{box-sizing:inherit}
 body{height:100%;margin:0;overflow:hidden;background:var(--bg);color:var(--fg);font-family:var(--font-ui);font-size:15px;line-height:1.4;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;-webkit-user-select:none;user-select:none}
@@ -78,8 +79,14 @@ svg{display:block}
 .tab[aria-selected="true"]{background:var(--raise);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .tab .n{font-size:12px;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums}
 
-main{flex:1;min-height:0;position:relative;display:flex;flex-direction:column}
+main{flex:1;min-height:0;position:relative;display:flex;flex-direction:column;overflow:hidden}
 .panel{flex:1;min-height:0;display:flex;flex-direction:column;position:relative}
+/* the browser only scrolls the panels up and down; a sideways drag is left to the tab swipe */
+.panel,.scroll,#lEmpty{touch-action:pan-y pinch-zoom}
+@keyframes in-next{from{transform:translateX(36px);opacity:0}}
+@keyframes in-prev{from{transform:translateX(-36px);opacity:0}}
+.panel.in-next{animation:in-next .2s ease-out}
+.panel.in-prev{animation:in-prev .2s ease-out}
 .bar{flex:none;display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:8px 16px}
 .spacer{flex:1}
 .scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
@@ -170,7 +177,7 @@ main:has(.toast:not([hidden])) .follow{bottom:72px}
 /* album: the work's cover, its title in full, the song quietly under it, then the ways out */
 .album{width:100%;max-width:440px;margin:0 auto;padding:10px 16px 24px;display:flex;flex-direction:column;gap:16px}
 .cover{position:relative;width:100%;aspect-ratio:4/3;border-radius:14px;overflow:hidden;background:var(--sunk)}
-.cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;-webkit-user-drag:none;-webkit-touch-callout:none}
 .cover .ph{display:none;position:absolute;left:50%;top:50%;width:56px;height:56px;margin:-28px 0 0 -28px;color:var(--faint)}
 .cover.none .ph{display:block}
 .cover.has{box-shadow:0 10px 26px rgba(21,25,37,.22)}
@@ -347,7 +354,7 @@ body.playing .a-song .eq{display:inline-flex}
     <section class="panel" id="panelAlbum" role="tabpanel" aria-labelledby="tabAlbum" hidden>
       <div class="scroll fade-top gap-top">
         <div class="album" id="album">
-          <div class="cover" id="aCover"><img id="aImg" alt="앨범 표지" referrerpolicy="no-referrer" hidden><svg class="ph" aria-hidden="true"><use href="#i-note"/></svg></div>
+          <div class="cover" id="aCover"><img id="aImg" alt="앨범 표지" referrerpolicy="no-referrer" draggable="false" hidden><svg class="ph" aria-hidden="true"><use href="#i-note"/></svg></div>
           <div class="a-info" id="aInfo"></div>
         </div>
         <div class="empty" id="aEmpty" hidden><h3>재생 중인 곡이 없어요</h3><p>재생목록에서 곡을 골라주세요.</p></div>
@@ -1750,7 +1757,7 @@ function armIdle() {
 }
 const ls = els.lScroll;
 ls.addEventListener('touchstart', () => { touching = true; clearTimeout(idleTimer); }, { passive: true });
-ls.addEventListener('touchmove', () => { if (follow && lyr.data && lyr.data.timed) setFollow(false); }, { passive: true });
+ls.addEventListener('touchmove', () => { if (!swipe && follow && lyr.data && lyr.data.timed) setFollow(false); }, { passive: true });   // swipe: a tab swipe is undecided or under way
 ls.addEventListener('touchend', () => { touching = false; armIdle(); }, { passive: true });
 ls.addEventListener('touchcancel', () => { touching = false; armIdle(); }, { passive: true });
 ls.addEventListener('wheel', () => { if (lyr.data && lyr.data.timed) { if (follow) setFollow(false); armIdle(); } }, { passive: true });
@@ -1893,7 +1900,12 @@ function renderAlbum() {
   if (html !== albumHTML) { albumHTML = html; els.aInfo.innerHTML = html; }
 }
 
-function setTab(t) {
+const TABS = ['queue', 'album', 'lyrics'];
+const panelOf = (t) => (t === 'queue' ? els.panelQueue : t === 'album' ? els.panelAlbum : els.panelLyrics);
+// dir: 1 when the new tab is to the right of the old one, -1 to the left; it slides in from that side
+function setTab(t, dir) {
+  for (const k of TABS) panelOf(k).classList.remove('in-next', 'in-prev');
+  if (dir) panelOf(t).classList.add(dir > 0 ? 'in-next' : 'in-prev');
   state.tab = t;
   els.tabQueue.setAttribute('aria-selected', String(t === 'queue'));
   els.tabAlbum.setAttribute('aria-selected', String(t === 'album'));
@@ -1909,9 +1921,71 @@ function setTab(t) {
   }
   syncWake();
 }
-els.tabQueue.addEventListener('click', () => setTab('queue'));
-els.tabAlbum.addEventListener('click', () => setTab('album'));
-els.tabLyrics.addEventListener('click', () => setTab('lyrics'));
+const tabTo = (t) => setTab(t, Math.sign(TABS.indexOf(t) - TABS.indexOf(state.tab)));
+els.tabQueue.addEventListener('click', () => tabTo('queue'));
+els.tabAlbum.addEventListener('click', () => tabTo('album'));
+els.tabLyrics.addEventListener('click', () => tabTo('lyrics'));
+
+/* ---------- swipe sideways between tabs ----------
+   Touch only: a mouse drag selects text, and a trackpad's sideways swipe is the browser's back/forward.
+   The panels let the browser pan only vertically (touch-action: pan-y), so a mostly vertical drag stays a scroll
+   and a sideways one reaches here. The panel follows the finger; far or fast enough switches the tab,
+   anything less springs back. Left alone: the screen edges (the system's back gesture), the reorder grip,
+   a text selection, and a second finger. The tap that ends a swipe is swallowed so it can't play a row,
+   seek to a lyric line or open a link. */
+const mainEl = document.querySelector('main');
+let swipe = null, noClickUntil = 0;
+function springBack(p) {
+  p.style.transition = 'transform .2s ease, opacity .2s ease';
+  p.style.transform = p.style.opacity = '';
+  setTimeout(() => { p.style.transition = ''; }, 220);
+}
+mainEl.addEventListener('pointerdown', (e) => {
+  if (swipe) {   // another finger, or a swipe whose end was missed
+    if (swipe.lock === 'x') springBack(swipe.panel);
+    swipe = null;
+  }
+  if (e.pointerType !== 'touch' || !e.isPrimary || drag) return;
+  if (e.clientX < 20 || e.clientX > innerWidth - 20 || e.target.closest('.grip')) return;
+  swipe = { id: e.pointerId, x: e.clientX, y: e.clientY, dx: 0, v: 0, pt: e.timeStamp, lock: '', panel: panelOf(state.tab) };
+});
+mainEl.addEventListener('pointermove', (e) => {
+  const s = swipe;
+  if (!s || e.pointerId !== s.id) return;
+  if (!s.lock) {
+    const dx = e.clientX - s.x, dy = e.clientY - s.y;
+    if (Math.hypot(dx, dy) < 10) return;
+    const sel = getSelection();
+    if (Math.abs(dx) < Math.abs(dy) * 1.4 || drag || (sel && !sel.isCollapsed)) { swipe = null; return; }   // a scroll, or text being selected
+    s.lock = 'x';
+    s.x += Math.sign(dx) * 10;   // follow from here on, without a jump
+  }
+  const d = e.clientX - s.x, i = TABS.indexOf(state.tab);
+  const end = (d > 0 && i === 0) || (d < 0 && i === TABS.length - 1);
+  s.v = 0.6 * s.v + 0.4 * (d - s.dx) / Math.max(1, e.timeStamp - s.pt);
+  s.dx = d;
+  s.pt = e.timeStamp;
+  const shown = end ? d / 4 : d;   // no tab that way: the panel gives only a little
+  s.panel.style.transform = `translateX(${shown}px)`;
+  s.panel.style.opacity = String(1 - 0.35 * Math.min(1, Math.abs(shown) / mainEl.clientWidth));
+});
+function endSwipe(e) {
+  const s = swipe;
+  if (!s || e.pointerId !== s.id) return;
+  swipe = null;
+  if (s.lock !== 'x') return;
+  noClickUntil = e.timeStamp + 400;
+  const j = TABS.indexOf(state.tab) + (s.dx < 0 ? 1 : -1);
+  const far = Math.abs(s.dx) > Math.min(100, mainEl.clientWidth * 0.25);
+  const flick = Math.abs(s.dx) > 40 && Math.abs(s.v) > 0.4 && Math.sign(s.v) === Math.sign(s.dx);
+  if (e.type === 'pointerup' && j >= 0 && j < TABS.length && (far || flick)) {
+    s.panel.style.transition = s.panel.style.transform = s.panel.style.opacity = '';
+    setTab(TABS[j], s.dx < 0 ? 1 : -1);
+  } else springBack(s.panel);
+}
+mainEl.addEventListener('pointerup', endSwipe);
+mainEl.addEventListener('pointercancel', endSwipe);
+mainEl.addEventListener('click', (e) => { if (e.timeStamp < noClickUntil) { e.preventDefault(); e.stopPropagation(); } }, true);
 
 /* ---------- screen wake lock (lyrics tab, while playing) ---------- */
 let wakeLock = null;
@@ -2386,6 +2460,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === ' ' && tag !== 'BUTTON') { e.preventDefault(); togglePlay(); }
   else if (e.key === 'ArrowLeft') skipBy(-10);
   else if (e.key === 'ArrowRight') skipBy(10);
+  else if (e.key === '1' || e.key === '2' || e.key === '3') tabTo(TABS[+e.key - 1]);
 });
 
 /* ---------- start ---------- */
