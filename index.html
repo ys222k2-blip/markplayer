@@ -14,8 +14,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap">
-<style>
-/* Layout: one-screen app — tabs on top, one scrolling panel, transport dock at the bottom.
+<style id="css">
+/* Layout: one-screen app, every control at the bottom where the thumb is (like Safari's address bar):
+   the panel scrolls, under it the panel's own buttons, then the transport dock, then the logo and the tabs.
    The single bold element is the current-lyric box; everything else stays quiet. */
 :root{
   --bg:#F1F2F6; --raise:#FFFFFF; --sunk:#E4E6EE; --line:#D6D9E3;
@@ -28,6 +29,7 @@
   --font-code:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
   --brand:#FAC775; --brand-ink:#1A2240;   /* logo only; same in both themes */
   --lyric-size:20px;
+  --top-gap:36px;   /* room under the status bar: iOS (home-screen app, iOS 26+) lays a soft fade over it */
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -60,21 +62,25 @@ svg{display:block}
 
 #app{height:100%;display:flex;flex-direction:column;max-width:720px;margin:0 auto}
 
-/* header */
-.top{display:flex;align-items:center;gap:12px;padding:10px 16px 6px}
+/* app bar: the logo (app menu) and the tabs, at the very bottom */
+.appbar{flex:none;display:flex;align-items:center;gap:10px;padding:10px 16px 8px;background:var(--bg)}
 /* wordmark: brand highlighter yellow, used nowhere else, so the logo never looks like a selection or the lyric box */
-.logo{flex:none;display:flex;align-items:center;font-family:var(--font-code);font-size:16px;font-weight:700;letter-spacing:-.02em}
+.logo{position:relative;flex:none;height:40px;margin-left:-4px;padding:0 4px;border-radius:10px;display:flex;align-items:center;font-family:var(--font-code);font-size:16px;font-weight:700;letter-spacing:-.02em}
+.logo:active{background:var(--sunk)}
+.upd{position:absolute;top:5px;right:-1px;width:8px;height:8px;border-radius:50%;background:var(--danger);box-shadow:0 0 0 2px var(--bg)}
 .logo i{font-style:normal;font-weight:600;color:var(--muted)}
 .logo b{position:relative;isolation:isolate;margin:0 4px;padding:0 3px;color:var(--brand-ink);line-height:1.55}
 .logo b::before{content:"";position:absolute;inset:1px -3px 0;z-index:-1;background:var(--brand);border-radius:2px 6px 3px 7px;transform:skewX(-12deg) rotate(-3deg)}
-.tabs{flex:1;display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:3px;padding:3px;border-radius:10px;background:var(--sunk)}
-.tab{height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;font-weight:600;color:var(--muted)}
+.tabs{flex:1;min-width:0;display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:3px;padding:3px;border-radius:12px;background:var(--sunk)}
+.tab{height:38px;min-width:0;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;font-size:14px;font-weight:600;color:var(--muted)}
+.tab svg{width:17px;height:17px;flex:none}
+@media (max-width:380px){.tab svg{display:none}}
 .tab[aria-selected="true"]{background:var(--raise);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .tab .n{font-size:12px;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums}
 
 main{flex:1;min-height:0;position:relative;display:flex;flex-direction:column}
 .panel{flex:1;min-height:0;display:flex;flex-direction:column;position:relative}
-.bar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:6px 16px 8px}
+.bar{flex:none;display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:8px 16px}
 .spacer{flex:1}
 .scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 
@@ -84,6 +90,7 @@ main{flex:1;min-height:0;position:relative;display:flex;flex-direction:column}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .btn:disabled{opacity:.4}
 .btn.sm{height:32px;padding:0 10px;font-size:13px}
+.btn.wide{width:100%;height:44px;justify-content:center}
 .selcount{font-size:13.5px;font-weight:600;font-variant-numeric:tabular-nums}
 
 /* queue */
@@ -126,6 +133,10 @@ body.playing .eq i{animation:eq .8s ease-in-out infinite alternate}
 .empty p{margin:0;line-height:1.55}
 .empty .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
 .fine{font-size:12.5px}
+#lEmpty{flex:1;min-height:0;max-width:none;overflow-y:auto}
+/* content starts below the status-bar fade and fades out as it scrolls up into it */
+.fade-top{-webkit-mask-image:linear-gradient(transparent,#000 var(--top-gap));mask-image:linear-gradient(transparent,#000 var(--top-gap))}
+.gap-top{padding-top:var(--top-gap)}
 
 /* lyrics */
 .seg{display:inline-flex;gap:2px;padding:3px;border-radius:9px;background:var(--sunk)}
@@ -176,7 +187,7 @@ body.playing .a-song .eq{display:inline-flex}
 .a-links .btn span{overflow:hidden;text-overflow:ellipsis}
 .a-links .btn .ext{width:13px;height:13px;color:var(--faint)}
 
-/* toast */
+/* toast: above the panel's buttons (its bottom is set when shown) */
 .toast{position:absolute;left:16px;right:16px;bottom:12px;z-index:10;max-width:440px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:11px 12px 11px 14px;border-radius:12px;background:var(--fg);color:var(--bg);font-size:13.5px;box-shadow:var(--shadow)}
 .toast span{flex:1;min-width:0}
 .toast button{flex:none;font-weight:700;color:var(--inv-accent)}
@@ -291,22 +302,30 @@ body.playing .a-song .eq{display:inline-flex}
     <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></symbol>
     <symbol id="i-bag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></symbol>
     <symbol id="i-ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M8 7h9v9"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+    <symbol id="i-disc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/></symbol>
+    <symbol id="i-quote" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8M8 13h5"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></symbol>
     <symbol id="i-locate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></symbol>
   </defs>
 </svg>
 
 <div id="app">
-  <header class="top">
-    <div class="logo" role="img" aria-label="mark"><i>&lt;</i><b>mark</b><i>&gt;</i></div>
-    <div class="tabs" role="tablist" aria-label="화면 전환">
-      <button class="tab" role="tab" id="tabQueue" aria-controls="panelQueue" aria-selected="true" type="button">재생목록 <span class="n" id="qCount">0</span></button>
-      <button class="tab" role="tab" id="tabAlbum" aria-controls="panelAlbum" aria-selected="false" type="button">앨범</button>
-      <button class="tab" role="tab" id="tabLyrics" aria-controls="panelLyrics" aria-selected="false" type="button">가사</button>
-    </div>
-  </header>
-
   <main>
     <section class="panel" id="panelQueue" role="tabpanel" aria-labelledby="tabQueue">
+      <div class="scroll fade-top gap-top" id="qScroll">
+        <div class="note" id="qNote" hidden></div>
+        <ul id="queue" aria-label="재생 대기열"></ul>
+        <div class="empty" id="qEmpty" hidden>
+          <h3>재생목록이 비었어요</h3>
+          <p>음악 폴더를 통째로 추가하면, 곡과 이름이 같은 LRC·SRT 가사도 함께 불러와요.</p>
+          <div class="btns">
+            <label class="btn primary" role="button" tabindex="0" for="dirInput"><svg><use href="#i-folder"/></svg>폴더 추가</label>
+            <label class="btn" role="button" tabindex="0" for="fileInput"><svg><use href="#i-note"/></svg>파일 추가</label>
+          </div>
+          <p class="fine">폴더 선택은 iOS 18.4 이상에서 돼요. 그보다 낮으면 파일 추가에서 곡과 가사 파일을 여러 개 함께 고르세요.</p>
+        </div>
+      </div>
       <div class="bar" id="qBar">
         <label class="btn" role="button" tabindex="0" for="fileInput"><svg><use href="#i-note"/></svg>파일 추가</label>
         <label class="btn" role="button" tabindex="0" for="dirInput"><svg><use href="#i-folder"/></svg>폴더 추가</label>
@@ -323,23 +342,10 @@ body.playing .a-song .eq{display:inline-flex}
         <button class="btn sm" id="selRemove" type="button"><svg><use href="#i-trash"/></svg>선택한 곡 빼기</button>
         <button class="btn sm" id="selKeep" type="button">선택 안 한 곡 빼기</button>
       </div>
-      <div class="scroll" id="qScroll">
-        <div class="note" id="qNote" hidden></div>
-        <ul id="queue" aria-label="재생 대기열"></ul>
-        <div class="empty" id="qEmpty" hidden>
-          <h3>재생목록이 비었어요</h3>
-          <p>음악 폴더를 통째로 추가하면, 곡과 이름이 같은 LRC·SRT 가사도 함께 불러와요.</p>
-          <div class="btns">
-            <label class="btn primary" role="button" tabindex="0" for="dirInput"><svg><use href="#i-folder"/></svg>폴더 추가</label>
-            <label class="btn" role="button" tabindex="0" for="fileInput"><svg><use href="#i-note"/></svg>파일 추가</label>
-          </div>
-          <p class="fine">폴더 선택은 iOS 18.4 이상에서 돼요. 그보다 낮으면 파일 추가에서 곡과 가사 파일을 여러 개 함께 고르세요.</p>
-        </div>
-      </div>
     </section>
 
     <section class="panel" id="panelAlbum" role="tabpanel" aria-labelledby="tabAlbum" hidden>
-      <div class="scroll">
+      <div class="scroll fade-top gap-top">
         <div class="album" id="album">
           <div class="cover" id="aCover"><img id="aImg" alt="앨범 표지" referrerpolicy="no-referrer" hidden><svg class="ph" aria-hidden="true"><use href="#i-note"/></svg></div>
           <div class="a-info" id="aInfo"></div>
@@ -349,6 +355,17 @@ body.playing .a-song .eq{display:inline-flex}
     </section>
 
     <section class="panel" id="panelLyrics" role="tabpanel" aria-labelledby="tabLyrics" hidden>
+      <div class="lwrap" id="lWrap">
+        <div class="lframe" id="lFrame" aria-hidden="true"></div>
+        <div class="scroll lyrics fade-top" id="lScroll">
+          <div id="lTop"></div>
+          <p class="lnote" id="lNote" hidden>시간 정보가 없는 가사라 자동으로 따라가지 않아요.</p>
+          <ol id="lyrics" aria-label="가사"></ol>
+          <div id="lBot"></div>
+        </div>
+        <button class="follow" id="followBtn" type="button" hidden><svg><use href="#i-locate"/></svg>현재 가사로</button>
+      </div>
+      <div class="empty fade-top gap-top" id="lEmpty" hidden></div>
       <div class="bar">
         <div class="seg" role="group" aria-label="가사 종류">
           <button id="srcLrc" type="button" aria-pressed="true">LRC</button>
@@ -357,17 +374,6 @@ body.playing .a-song .eq{display:inline-flex}
         <span class="spacer"></span>
         <button class="btn" id="lyrSettings" type="button"><svg><use href="#i-sliders"/></svg><span id="lyrSetLabel">가사 설정</span></button>
       </div>
-      <div class="lwrap" id="lWrap">
-        <div class="lframe" id="lFrame" aria-hidden="true"></div>
-        <div class="scroll lyrics" id="lScroll">
-          <div id="lTop"></div>
-          <p class="lnote" id="lNote" hidden>시간 정보가 없는 가사라 자동으로 따라가지 않아요.</p>
-          <ol id="lyrics" aria-label="가사"></ol>
-          <div id="lBot"></div>
-        </div>
-      </div>
-      <div class="empty" id="lEmpty" hidden></div>
-      <button class="follow" id="followBtn" type="button" hidden><svg><use href="#i-locate"/></svg>현재 가사로</button>
     </section>
 
     <div class="toast" id="toast" role="status" aria-live="polite" hidden><span id="toastMsg"></span><button id="toastAct" type="button" hidden>되돌리기</button></div>
@@ -395,6 +401,15 @@ body.playing .a-song .eq{display:inline-flex}
       <button class="xb" id="bSleep" type="button" aria-label="수면 타이머"><svg><use href="#i-moon"/></svg><span id="sleepLabel">수면 타이머</span></button>
     </div>
   </footer>
+
+  <nav class="appbar">
+    <button class="logo" id="appMenu" type="button" aria-label="mark 메뉴"><i>&lt;</i><b>mark</b><i>&gt;</i><span class="upd" id="updDot" hidden></span></button>
+    <div class="tabs" role="tablist" aria-label="화면 전환">
+      <button class="tab" role="tab" id="tabQueue" aria-controls="panelQueue" aria-selected="true" type="button"><svg aria-hidden="true"><use href="#i-list"/></svg>재생목록 <span class="n" id="qCount">0</span></button>
+      <button class="tab" role="tab" id="tabAlbum" aria-controls="panelAlbum" aria-selected="false" type="button"><svg aria-hidden="true"><use href="#i-disc"/></svg>앨범</button>
+      <button class="tab" role="tab" id="tabLyrics" aria-controls="panelLyrics" aria-selected="false" type="button"><svg aria-hidden="true"><use href="#i-quote"/></svg>가사</button>
+    </div>
+  </nav>
 </div>
 
 <div class="sheet-wrap" id="sheetWrap" hidden>
@@ -408,7 +423,7 @@ body.playing .a-song .eq{display:inline-flex}
 <input class="vh" type="file" id="fileInput" multiple tabindex="-1" aria-hidden="true">
 <input class="vh" type="file" id="dirInput" webkitdirectory multiple tabindex="-1" aria-hidden="true">
 
-<script>
+<script id="appjs">
 (() => {
 'use strict';
 
@@ -668,6 +683,7 @@ const els = {
   bPrev: $('bPrev'), bBack: $('bBack'), bPlay: $('bPlay'), playIcon: $('playIcon'), bFwd: $('bFwd'), bNext: $('bNext'),
   bMode: $('bMode'), modeIcon: $('modeIcon'), modeLabel: $('modeLabel'), bRate: $('bRate'), rateLabel: $('rateLabel'), bSleep: $('bSleep'), sleepLabel: $('sleepLabel'),
   sheetWrap: $('sheetWrap'), sheetTitle: $('sheetTitle'), sheetBody: $('sheetBody'), sheetClose: $('sheetClose'),
+  appMenu: $('appMenu'), updDot: $('updDot'),
   fileInput: $('fileInput'), dirInput: $('dirInput'),
 };
 
@@ -1384,6 +1400,7 @@ function renderSelBar() {
   els.qBar.hidden = state.select;
   els.selBar.hidden = !state.select;
   els.selActs.hidden = !state.select;
+  if (!els.toast.hidden) placeToast();
   els.selCount.textContent = `${k}곡 선택`;
   els.selAll.textContent = k === n && n > 0 ? '선택 해제' : '전체 선택';
   els.selRemove.disabled = k === 0;
@@ -1668,11 +1685,13 @@ function renderLyricLines() {
   if (d.timed) tickLyrics(true); else els.lScroll.scrollTop = 0;
 }
 
+const topGap = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--top-gap')) || 36;
 function sizeSpacers() {
   const h = els.lScroll.clientHeight;
   if (!h) return;
-  const s = lyr.data && lyr.data.timed ? Math.ceil(h / 2) : 8;
-  els.lTop.style.height = els.lBot.style.height = s + 'px';
+  const timed = !!(lyr.data && lyr.data.timed);
+  els.lTop.style.height = (timed ? Math.ceil(h / 2) : topGap()) + 'px';
+  els.lBot.style.height = (timed ? Math.ceil(h / 2) : 8) + 'px';
 }
 
 function scrollToActive(instant) {
@@ -1882,6 +1901,7 @@ function setTab(t) {
   els.panelQueue.hidden = t !== 'queue';
   els.panelAlbum.hidden = t !== 'album';
   els.panelLyrics.hidden = t !== 'lyrics';
+  if (!els.toast.hidden) placeToast();
   if (t === 'album') retryCover();
   if (t === 'lyrics') {
     setFollow(true, true);
@@ -2180,6 +2200,7 @@ els.sheetBody.addEventListener('click', (e) => {
     return;
   }
   if (act === 'repo') { repoAction(val); return; }
+  if (act === 'app') { saveSession(true); location.reload(); return; }
   if (act === 'pick') {
     const c = cur(), a = c && c.repo && c.repo.alts[+val];
     if (!a) return;
@@ -2247,9 +2268,67 @@ els.bSleep.addEventListener('click', () => {
 });
 els.lyrSettings.addEventListener('click', () => openSheet('가사 설정', lyrSheet));
 
+/* ---------- app menu: reload and updates ----------
+   A home-screen app has no reload button, and a reload empties the queue (picked files can't be kept).
+   So now and then the app asks the server for index.html (a revalidation, usually a tiny 304) and compares its
+   code with the code running now; when it differs the logo gets a dot, and the logo's menu offers the reload. */
+const appCode = (doc) => ['css', 'appjs'].map((id) => { const el = doc.getElementById(id); return el ? el.textContent : ''; }).join('\n');
+const upd = { running: appCode(document), state: 'idle', newAt: '', checkedAt: 0, checking: null, told: false };
+function checkUpdate() {
+  if (upd.checking) return upd.checking;
+  upd.checking = (async () => {
+    try {
+      const r = await fetch(location.href.split('#')[0], { cache: 'no-cache' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const fresh = appCode(new DOMParser().parseFromString(await r.text(), 'text/html'));
+      upd.state = fresh.trim() && fresh !== upd.running ? 'new' : 'same';
+      upd.newAt = r.headers.get('last-modified') || '';
+      upd.checkedAt = Date.now();
+    } catch (e) {
+      upd.state = 'err';
+    } finally {
+      upd.checking = null;
+    }
+    els.updDot.hidden = upd.state !== 'new';
+    refreshSheet();
+    if (upd.state === 'new' && !upd.told && els.sheetWrap.hidden) { upd.told = true; toast('새 버전이 있어요', '보기', openAppMenu); }
+  })();
+  refreshSheet();
+  return upd.checking;
+}
+const dayText = (s) => {
+  const d = new Date(s);
+  return isNaN(d) ? '' : `${d.getMonth() + 1}월 ${d.getDate()}일 ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+};
+const appSheet = () => {
+  const mine = dayText(document.lastModified);
+  const head = upd.checking ? '새 버전이 있는지 확인하는 중…'
+    : upd.state === 'new' ? `<b>새 버전이 있어요</b>${dayText(upd.newAt) ? ` · ${dayText(upd.newAt)}에 올라온 판` : ''}`
+    : upd.state === 'same' ? '<b>최신 판이에요</b>'
+    : upd.state === 'err' ? '새 버전을 확인하지 못했어요. 인터넷 연결을 확인하세요' : '';
+  const real = state.queue.some((x) => !x.sample);
+  return `<p class="stat">${head}${head && mine ? '<br>' : ''}${mine ? `지금 쓰는 판: ${mine}` : ''}</p>`
+    + `<button class="btn wide${upd.state === 'new' ? ' primary' : ''}" type="button" data-act="app:reload"><svg><use href="#i-refresh"/></svg>새로 고침</button>`
+    + (real ? '<p class="hint" style="margin-top:10px">새로 고치면 재생목록이 비어요. 같은 폴더를 다시 추가하면 순서와 듣던 위치를 이어서 불러와요.</p>' : '');
+};
+function openAppMenu() {
+  openSheet('&lt;mark&gt;', appSheet);
+  if (Date.now() - upd.checkedAt > 60000) checkUpdate();
+}
+els.appMenu.addEventListener('click', openAppMenu);
+setTimeout(checkUpdate, 4000);
+
 /* ---------- toast ---------- */
 let toastTimer = 0, toastFn = null;
+// the shown panel's button rows are at its bottom; the toast goes just above them
+function placeToast() {
+  const p = state.tab === 'queue' ? els.panelQueue : state.tab === 'lyrics' ? els.panelLyrics : null;
+  let h = 0;
+  if (p) for (const b of p.children) if (b.classList.contains('bar') && !b.hidden) h += b.offsetHeight;
+  els.toast.style.bottom = h + 12 + 'px';
+}
 function toast(msg, actLabel, fn) {
+  placeToast();
   els.toastMsg.textContent = msg;
   toastFn = fn || null;
   els.toastAct.hidden = !fn;
@@ -2288,7 +2367,7 @@ function saveSession(force) {
 window.addEventListener('pagehide', () => saveSession(true));
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') saveSession(true);
-  else { kick(); tickLyrics(true); renderSleep(); }
+  else { kick(); tickLyrics(true); renderSleep(); if (Date.now() - upd.checkedAt > 30 * 60000) checkUpdate(); }
   syncWake();
 });
 window.addEventListener('resize', () => { sizeSpacers(); placeFrame(els.lFrame.classList.contains('gap')); if (follow) scrollToActive(true); });
