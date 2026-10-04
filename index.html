@@ -187,7 +187,7 @@ main:has(.toast:not([hidden])) .follow{bottom:72px}
 .a-song span:last-child{min-width:0;overflow-wrap:anywhere}
 body.playing .a-song .eq{display:inline-flex}
 .a-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
-.chip.code{font-family:var(--font-code);letter-spacing:0}
+.a-code{white-space:nowrap;-webkit-user-select:all;user-select:all}   /* one long-press picks the whole code to copy */
 .a-links{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .a-links.one{grid-template-columns:1fr}
 .a-links .btn{height:42px;min-width:0;justify-content:center;text-decoration:none}
@@ -1812,7 +1812,7 @@ function workOf(it) {
   for (let i = segs.length - 1; i >= Math.max(at, 0) && !title; i--) if (!FORMAT_DIR.test(normKey(segs[i]))) title = stripCode(segs[i]);
   return {
     code,
-    title: title || (code ? code.toUpperCase() : it.name),
+    title: title || (code ? '' : it.name),          // shown after the RJ code
     song: ko.track || it.name,
     store: code ? `https://www.dlsite.com/maniax/work/=/product_id/${code.toUpperCase()}.html` : '',
     subs: r && repo.cfg.name ? repoFolderUrl(r.dir) : '',
@@ -1890,14 +1890,14 @@ function renderAlbum() {
   let html = '';
   if (c) {
     const ly = findLyrics(c), chips = [], links = [];
-    if (w.code && w.title !== w.code.toUpperCase()) chips.push(`<span class="chip code">${esc(w.code.toUpperCase())}</span>`);
     if (ly.lrc) chips.push('<span class="chip ly">LRC</span>');
     if (ly.srt) chips.push('<span class="chip ly">SRT</span>');
     if (ly.ja) chips.push('<span class="chip ly">日</span>');
     const both = !!(w.store && w.subs);   // side by side: short names, so neither is cut
     if (w.store) links.push(outLink(w.store, 'i-bag', both ? 'DLsite' : 'DLsite에서 보기'));
     if (w.subs) links.push(outLink(w.subs, 'i-cloud', both ? '자막 폴더' : '자막 폴더 열기'));
-    html = `<div><h2 class="a-title">${esc(w.title)}</h2>`
+    const head = w.code ? `<span class="a-code">${esc(w.code.toUpperCase())}</span>${w.title ? ' ' + esc(w.title) : ''}` : esc(w.title);
+    html = `<div><h2 class="a-title">${head}</h2>`
       + (w.title !== w.song ? `<p class="a-song"><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span><span>${esc(w.song)}</span></p>` : '')
       + (chips.length ? `<div class="a-chips">${chips.join('')}</div>` : '') + '</div>'
       + (links.length ? `<div class="a-links${links.length === 1 ? ' one' : ''}">${links.join('')}</div>` : '');
