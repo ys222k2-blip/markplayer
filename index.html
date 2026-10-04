@@ -140,12 +140,21 @@ body.playing .eq i{animation:eq .8s ease-in-out infinite alternate}
 .empty .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
 .fine{font-size:12.5px}
 #lEmpty{flex:1;min-height:0;max-width:none;overflow-y:auto}
-/* empty queue: two big buttons at the bottom, where the thumb is */
+/* empty queue: one centred block — a badge, a line of help, the last list if any, two big buttons */
 #qScroll{display:flex;flex-direction:column}
 #queue{flex:none}
-#qEmpty{flex:1;max-width:none;justify-content:flex-end;padding:16px 16px 12px}
-.bigadd{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
-.bigadd label{height:120px;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;border:1px solid var(--line);background:var(--raise);color:var(--fg);font-size:16px;font-weight:700;cursor:pointer;-webkit-user-select:none;user-select:none}
+#qEmpty{flex:1;width:100%;max-width:420px;margin:0 auto;align-items:center;justify-content:center;gap:12px;padding:8px 20px 32px;text-align:center;text-wrap:balance;word-break:keep-all}
+#qEmpty .badge{width:64px;height:64px;margin-bottom:2px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--accent-soft);color:var(--accent)}
+#qEmpty .badge svg{width:30px;height:30px}
+#qEmpty h3{font-size:19px}
+#qEmpty p{max-width:310px}
+#qEmpty .note{width:100%;margin:2px 0 0;text-align:left}
+#qEmpty .fine{color:var(--faint);line-height:1.6}
+/* the last-list card, or a short screen: drop the badge so the block still fits */
+#qEmpty:has(#qNote:not([hidden])) .badge{display:none}
+@media (max-height:720px){#qEmpty .badge{display:none}.bigadd label{height:88px}}
+.bigadd{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.bigadd label{height:108px;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;border:1px solid var(--line);background:var(--raise);color:var(--fg);font-size:16px;font-weight:700;cursor:pointer;-webkit-user-select:none;user-select:none;box-shadow:0 1px 2px rgba(21,25,37,.06)}
 .bigadd label svg{width:32px;height:32px}
 .bigadd label.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .bigadd label:active{filter:brightness(.94)}
@@ -332,16 +341,17 @@ body.playing .a-song .eq{display:inline-flex}
   <main>
     <section class="panel" id="panelQueue" role="tabpanel" aria-labelledby="tabQueue">
       <div class="scroll fade-top gap-top" id="qScroll">
-        <div class="note" id="qNote" hidden></div>
         <ul id="queue" aria-label="재생 대기열"></ul>
         <div class="empty" id="qEmpty" hidden>
+          <span class="badge" aria-hidden="true"><svg><use href="#i-note"/></svg></span>
           <h3>재생목록이 비었어요</h3>
-          <p>곡이 든 폴더를 추가하면, 곡과 이름이 같은 LRC·SRT 가사도 함께 불러와요. 하위 폴더는 넣지 않아요.</p>
+          <p>곡이 든 폴더를 고르면 이름이 같은 LRC·SRT 가사도 함께 불러와요.</p>
+          <div class="note" id="qNote" hidden></div>
           <div class="bigadd">
             <label class="primary" role="button" tabindex="0" for="dirInput"><svg aria-hidden="true"><use href="#i-folder"/></svg>폴더 추가</label>
             <label role="button" tabindex="0" for="fileInput"><svg aria-hidden="true"><use href="#i-note"/></svg>파일 추가</label>
           </div>
-          <p class="fine">폴더 선택은 iOS 18.4 이상에서 돼요. 그보다 낮으면 파일 추가에서 곡과 가사 파일을 여러 개 함께 고르세요.</p>
+          <p class="fine">하위 폴더는 넣지 않아요<br>폴더 선택은 iOS 18.4 이상에서 돼요</p>
         </div>
       </div>
       <div class="bar" id="qBar">
@@ -2363,7 +2373,6 @@ function placeToast() {
   const p = state.tab === 'queue' ? els.panelQueue : state.tab === 'lyrics' ? els.panelLyrics : null;
   let h = 0;
   if (p) for (const b of p.children) if (b.classList.contains('bar') && !b.hidden) h += b.offsetHeight;
-  if (p === els.panelQueue && !els.qEmpty.hidden) h = Math.max(h, p.getBoundingClientRect().bottom - els.qEmpty.querySelector('.bigadd').getBoundingClientRect().top);
   els.toast.style.bottom = h + 12 + 'px';
 }
 function toast(msg, actLabel, fn) {
