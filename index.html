@@ -325,7 +325,7 @@ body.playing .a-song .eq{display:inline-flex}
         <ul id="queue" aria-label="재생 대기열"></ul>
         <div class="empty" id="qEmpty" hidden>
           <h3>재생목록이 비었어요</h3>
-          <p>음악 폴더를 통째로 추가하면, 곡과 이름이 같은 LRC·SRT 가사도 함께 불러와요.</p>
+          <p>곡이 든 폴더를 추가하면, 곡과 이름이 같은 LRC·SRT 가사도 함께 불러와요. 하위 폴더는 넣지 않아요.</p>
           <div class="btns">
             <label class="btn primary" role="button" tabindex="0" for="dirInput"><svg><use href="#i-folder"/></svg>폴더 추가</label>
             <label class="btn" role="button" tabindex="0" for="fileInput"><svg><use href="#i-note"/></svg>파일 추가</label>
@@ -1549,11 +1549,15 @@ function addFiles(list) {
   if (!files.length) return;
   const audios = [];
   const have = new Set(state.queue.map((x) => x.key));
-  let lyrCount = 0, dup = 0;
+  let lyrCount = 0, dup = 0, deep = 0;
   for (const f of files) {
     const path = (f.webkitRelativePath || f.name).replace(/^\/+/, '');
     const p = splitName(path);
     if (!p.name || p.name.startsWith('.')) continue;          // skip ._song.mp3 and other hidden files
+    if (f.webkitRelativePath && path.split('/').length > 2) {  // a picked folder brings only its own files, not its subfolders'
+      if (AUDIO_EXT.has(p.ext) || /^audio\//.test(f.type || '')) deep++;
+      continue;
+    }
     if (LYRIC_EXT.has(p.ext)) { registerLyric(f, p); lyrCount++; }
     else if (AUDIO_EXT.has(p.ext) || /^audio\//.test(f.type || '')) {
       const key = path + '|' + f.size;                         // same key as makeItem; re-adding a folder only adds new songs
@@ -1586,7 +1590,7 @@ function addFiles(list) {
   renderQueue();
   saveSession(true);
 
-  const skip = dup ? ` · 이미 있는 ${dup}곡은 건너뛰었어요` : '';
+  const skip = (dup ? ` · 이미 있는 ${dup}곡은 건너뛰었어요` : '') + (deep ? ` · 하위 폴더의 ${deep}곡은 넣지 않았어요` : '');
   const rk = repo.cfg.on ? items.filter((x) => x.repo).length : 0;
   const rs = rk ? ` · 저장소 자막 ${rk}곡` : '';
   if (restore && restore.cur) toast(`${items.length}곡 추가${rs} · 지난번 위치(${fmt(restore.t)})부터 이어서 들을 수 있어요`);
@@ -1594,6 +1598,7 @@ function addFiles(list) {
   else if (items.length) toast(`${items.length}곡을 추가했어요${rs}${skip}`);
   else if (lyrCount) toast(`가사 ${lyrCount}개를 추가했어요${skip || '. 이름이 같은 곡에 붙어요'}`);
   else if (dup) toast(`${dup}곡 모두 이미 목록에 있어요`);
+  else if (deep) toast('이 폴더에 바로 든 곡이 없어요. 하위 폴더는 넣지 않으니, 곡이 든 폴더를 골라 주세요');
   else toast('추가할 수 있는 음악이나 가사 파일이 없어요');
   if (items.length) repoAfterAdd();
 }
