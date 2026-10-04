@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>작품 탭 시안</title>
+<style>
+:root{
+  --bg:#F1F2F6; --raise:#FFFFFF; --sunk:#E4E6EE; --line:#D6D9E3;
+  --fg:#151925; --muted:#5E6579; --faint:#9CA1B2;
+  --accent:#2C55D8; --on-accent:#FFFFFF; --accent-soft:rgba(44,85,216,.10); --accent-line:rgba(44,85,216,.5);
+  --font-ui:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Segoe UI","Noto Sans KR",system-ui,sans-serif;
+  --font-code:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --brand:#FAC775; --brand-ink:#1A2240;
+}
+*{box-sizing:border-box}
+body{margin:0;padding:28px;background:#C9CCD6;font-family:var(--font-ui);color:var(--fg);font-size:15px;line-height:1.4}
+.row3{display:flex;gap:28px;align-items:flex-start}
+.cap{width:390px;margin:0 0 10px;font-size:14px;font-weight:700;color:#2a2f3d}
+.cap small{display:block;font-weight:500;color:#4b5164;font-size:12.5px;margin-top:2px}
+.phone{width:390px;height:800px;border-radius:30px;overflow:hidden;background:var(--bg);display:flex;flex-direction:column;box-shadow:0 18px 40px rgba(0,0,0,.25);padding-top:14px}
+svg{display:block}
+/* header (same as the app, three tabs) */
+.top{display:flex;align-items:center;gap:12px;padding:10px 16px 6px}
+.logo{flex:none;display:flex;align-items:center;font-family:var(--font-code);font-size:16px;font-weight:700;letter-spacing:-.02em}
+.logo i{font-style:normal;font-weight:600;color:var(--muted)}
+.logo b{position:relative;isolation:isolate;margin:0 4px;padding:0 3px;color:var(--brand-ink);line-height:1.55}
+.logo b::before{content:"";position:absolute;inset:1px -3px 0;z-index:-1;background:var(--brand);border-radius:2px 6px 3px 7px;transform:skewX(-12deg) rotate(-3deg)}
+.tabs{flex:1;display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:3px;padding:3px;border-radius:10px;background:var(--sunk)}
+.tab{height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;font-weight:600;color:var(--muted)}
+.tab.on{background:var(--raise);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.tab .n{font-size:12px;font-weight:500;color:var(--muted)}
+/* the new panel */
+main{flex:1;min-height:0;overflow:hidden;padding:14px 16px 0;display:flex;flex-direction:column;align-items:center}
+.work{width:100%;max-width:330px;display:flex;flex-direction:column;gap:14px}
+.cover{width:100%;aspect-ratio:1;border-radius:14px;overflow:hidden;position:relative;box-shadow:0 10px 26px rgba(21,25,37,.22)}
+.cover.art{background:
+  radial-gradient(120% 90% at 20% 15%,#f6d7e6 0%,transparent 55%),
+  radial-gradient(90% 80% at 85% 85%,#9fb3f5 0%,transparent 60%),
+  linear-gradient(160deg,#e9c9da,#7f8fd6)}
+.cover.art::after{content:"DLsite 표지";position:absolute;left:12px;bottom:10px;font-size:11px;font-weight:700;letter-spacing:.04em;color:rgba(255,255,255,.85)}
+.cover.none{background:var(--sunk);box-shadow:none;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--faint)}
+.cover.none svg{width:64px;height:64px}
+.ttl{font-size:18px;font-weight:700;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sub{margin-top:3px;font-size:13.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.chip{padding:0 5px;border:1px solid var(--line);border-radius:4px;font-size:10.5px;font-weight:700;letter-spacing:.04em;line-height:16px;color:var(--muted)}
+.chip.code{font-family:var(--font-code);letter-spacing:0}
+.chip.ly{border-color:var(--accent-line);color:var(--accent)}
+.links{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.links.one{grid-template-columns:1fr}
+.btn{height:42px;padding:0 12px;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;font-size:13.5px;font-weight:600;background:var(--raise);border:1px solid var(--line);color:var(--fg)}
+.btn svg{width:17px;height:17px;flex:none}
+.btn .ext{width:13px;height:13px;color:var(--faint)}
+.hint{font-size:12.5px;color:var(--muted);line-height:1.5;margin:0}
+/* dock (unchanged) */
+.dock{flex:none;display:flex;flex-direction:column;gap:4px;padding:10px 16px 26px;border-top:1px solid var(--line);background:var(--bg)}
+.now-t{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.now-s{font-size:12px;color:var(--muted)}
+.track{height:6px;border-radius:3px;background:var(--sunk);margin:10px 0 6px;position:relative}
+.fill{position:absolute;left:0;top:0;bottom:0;width:38%;border-radius:3px;background:var(--accent)}
+.thumb{position:absolute;left:38%;top:50%;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--bg)}
+.times{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted)}
+.transport{display:flex;align-items:center;justify-content:space-between;padding:0 2px}
+.tb{width:50px;height:50px;display:flex;align-items:center;justify-content:center}
+.tb svg{width:26px;height:26px}
+.tb.play{width:62px;height:62px;border-radius:50%;background:var(--accent);color:var(--on-accent)}
+.extras{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:2px}
+.xb{height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:var(--sunk);color:var(--muted);font-size:13px;font-weight:600}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="i-note" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
+    <symbol id="i-cloud" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></symbol>
+    <symbol id="i-bag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></symbol>
+    <symbol id="i-ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M8 7h9v9"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5.14v13.72a1 1 0 0 0 1.52.85l10.9-6.86a1 1 0 0 0 0-1.7L9.52 4.3A1 1 0 0 0 8 5.14z"/></symbol>
+    <symbol id="i-prev" viewBox="0 0 24 24"><rect fill="currentColor" x="4.5" y="5" width="2.4" height="14" rx="1"/><path fill="currentColor" d="M19.5 6.1v11.8a.9.9 0 0 1-1.38.76L9.2 12.76a.9.9 0 0 1 0-1.52l8.92-5.9a.9.9 0 0 1 1.38.76z"/></symbol>
+    <symbol id="i-next" viewBox="0 0 24 24"><rect fill="currentColor" x="17.1" y="5" width="2.4" height="14" rx="1"/><path fill="currentColor" d="M4.5 6.1v11.8a.9.9 0 0 0 1.38.76l8.92-5.9a.9.9 0 0 0 0-1.52L5.88 5.34a.9.9 0 0 0-1.38.76z"/></symbol>
+    <symbol id="i-back10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/><text x="12.3" y="15.3" text-anchor="middle" font-size="7.8" font-weight="700" fill="currentColor" stroke="none" font-family="sans-serif">10</text></symbol>
+    <symbol id="i-fwd10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/><text x="11.7" y="15.3" text-anchor="middle" font-size="7.8" font-weight="700" fill="currentColor" stroke="none" font-family="sans-serif">10</text></symbol>
+  </defs>
+</svg>
+
+<template id="hdr">
+  <header class="top">
+    <div class="logo"><i>&lt;</i><b>mark</b><i>&gt;</i></div>
+    <div class="tabs"><div class="tab">재생목록 <span class="n">12</span></div><div class="tab on">작품</div><div class="tab">가사</div></div>
+  </header>
+</template>
+<template id="dock">
+  <footer class="dock">
+    <div class="now-t">03. 귓가에서 속삭이는 밤</div>
+    <div class="now-s">3 / 12 · RJ01234567_작품명 · MP3</div>
+    <div class="track"><div class="fill"></div><div class="thumb"></div></div>
+    <div class="times"><span>4:12</span><span>-6:51</span></div>
+    <div class="transport">
+      <div class="tb"><svg><use href="#i-prev"/></svg></div><div class="tb"><svg style="width:30px;height:30px"><use href="#i-back10"/></svg></div>
+      <div class="tb play"><svg style="width:28px;height:28px"><use href="#i-play"/></svg></div>
+      <div class="tb"><svg style="width:30px;height:30px"><use href="#i-fwd10"/></svg></div><div class="tb"><svg><use href="#i-next"/></svg></div>
+    </div>
+    <div class="extras"><div class="xb">전체재생</div><div class="xb">1.0×</div><div class="xb">수면 타이머</div></div>
+  </footer>
+</template>
+
+<div class="row3">
+  <div>
+    <p class="cap">① RJ 번호 + 저장소 자막 있음<small>표지 · 작품명(저장소 폴더 이름) · 버튼 두 개</small></p>
+    <div class="phone">
+      <slot data-t="hdr"></slot>
+      <main><div class="work">
+        <div class="cover art"></div>
+        <div>
+          <div class="ttl">03. 귓가에서 속삭이는 밤</div>
+          <div class="sub">작품명이 여기에 들어가요 ~부제까지 길면 말줄임~</div>
+          <div class="chips"><span class="chip code">RJ01234567</span><span class="chip ly">LRC</span><span class="chip ly">SRT</span><span class="chip ly">日</span></div>
+        </div>
+        <div class="links">
+          <div class="btn"><svg><use href="#i-bag"/></svg>DLsite<svg class="ext"><use href="#i-ext"/></svg></div>
+          <div class="btn"><svg><use href="#i-cloud"/></svg>자막 폴더<svg class="ext"><use href="#i-ext"/></svg></div>
+        </div>
+      </div></main>
+      <slot data-t="dock" data-title="03. 귓가에서 속삭이는 밤" data-sub="3 / 12 · RJ01234567_작품명 · MP3"></slot>
+    </div>
+  </div>
+
+  <div>
+    <p class="cap">② RJ 번호만 있음 (자막 없음)<small>DLsite 버튼만, 한 줄 전체 너비</small></p>
+    <div class="phone">
+      <slot data-t="hdr"></slot>
+      <main><div class="work">
+        <div class="cover art"></div>
+        <div>
+          <div class="ttl">01. はじめまして</div>
+          <div class="sub">RJ299717 폴더 이름</div>
+          <div class="chips"><span class="chip code">RJ299717</span></div>
+        </div>
+        <div class="links one">
+          <div class="btn"><svg><use href="#i-bag"/></svg>DLsite에서 보기<svg class="ext"><use href="#i-ext"/></svg></div>
+        </div>
+      </div></main>
+      <slot data-t="dock" data-title="01. はじめまして" data-sub="1 / 8 · RJ299717 폴더 이름 · WAV"></slot>
+    </div>
+  </div>
+
+  <div>
+    <p class="cap">③ RJ 번호 없음 (일반 음악)<small>폴더 안 이미지 → 없으면 빈 자리 표지</small></p>
+    <div class="phone">
+      <slot data-t="hdr"></slot>
+      <main><div class="work">
+        <div class="cover none"><svg><use href="#i-note"/></svg></div>
+        <div>
+          <div class="ttl">밤양갱</div>
+          <div class="sub">내 음악 › 2024</div>
+          <div class="chips"><span class="chip">M4A</span><span class="chip ly">LRC</span></div>
+        </div>
+        <p class="hint">RJ 번호가 없는 곡이라 바로 갈 곳이 없어요.</p>
+      </div></main>
+      <slot data-t="dock" data-title="밤양갱" data-sub="5 / 20 · 2024 · M4A"></slot>
+    </div>
+  </div>
+</div>
+<script>
+document.querySelectorAll('slot[data-t]').forEach((s) => {
+  const f = document.getElementById(s.dataset.t).content.cloneNode(true);
+  if (s.dataset.title) { f.querySelector('.now-t').textContent = s.dataset.title; f.querySelector('.now-s').textContent = s.dataset.sub; }
+  s.replaceWith(f);
+});
+</script>
+</body>
+</html>

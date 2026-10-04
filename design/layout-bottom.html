@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>아래로 모으기 시안</title>
+<style>
+:root{
+  --bg:#F1F2F6; --raise:#FFFFFF; --sunk:#E4E6EE; --line:#D6D9E3;
+  --fg:#151925; --muted:#5E6579; --faint:#9CA1B2;
+  --accent:#2C55D8; --on-accent:#FFFFFF; --accent-soft:rgba(44,85,216,.10); --accent-line:rgba(44,85,216,.5);
+  --font-ui:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Segoe UI","Noto Sans KR",system-ui,sans-serif;
+  --font-code:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --font-lyric:"Gowun Batang","AppleMyungjo","Nanum Myeongjo",Batang,serif;
+  --brand:#FAC775; --brand-ink:#1A2240;
+}
+*{box-sizing:border-box}
+body{margin:0;padding:28px;background:#C9CCD6;font-family:var(--font-ui);color:var(--fg);font-size:15px;line-height:1.4}
+.row3{display:flex;gap:28px;align-items:flex-start}
+.cap{width:390px;margin:0 0 10px;font-size:14px;font-weight:700;color:#2a2f3d}
+.cap small{display:block;font-weight:500;color:#4b5164;font-size:12.5px;margin-top:2px}
+.phone{position:relative;width:390px;height:844px;border-radius:44px;overflow:hidden;background:var(--bg);display:flex;flex-direction:column;box-shadow:0 18px 40px rgba(0,0,0,.25)}
+svg{display:block}
+/* iOS status bar + the soft fade iOS draws under it in a home-screen app */
+.status{position:absolute;z-index:5;left:0;right:0;top:0;height:54px;display:flex;align-items:center;justify-content:space-between;padding:6px 30px 0 46px;font-weight:700;font-size:16.5px;pointer-events:none}
+.status i{font-style:normal;display:flex;gap:6px;align-items:center;font-size:12px}
+.status i b{display:inline-block;background:#111;color:#fff;border-radius:5px;padding:1px 4px;font-size:11px}
+.fade{position:absolute;z-index:4;left:0;right:0;top:0;height:84px;background:linear-gradient(var(--bg) 0%,rgba(241,242,246,.92) 55%,rgba(241,242,246,0) 100%);pointer-events:none}
+.island{position:absolute;z-index:6;top:11px;left:50%;width:120px;height:34px;margin-left:-60px;border-radius:20px;background:#000}
+main{flex:1;min-height:0;position:relative;display:flex;flex-direction:column}
+.content{flex:1;min-height:0;overflow:hidden;padding-top:74px}   /* status bar (54) + room for the fade (20) */
+.content.scrolled{padding-top:0}
+.bar{flex:none;display:flex;align-items:center;gap:8px;padding:8px 16px}
+.spacer{flex:1}
+.btn{height:34px;padding:0 12px;border-radius:9px;display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;background:var(--raise);border:1px solid var(--line);white-space:nowrap}
+.btn svg{width:17px;height:17px}
+.btn.ghost{background:none;border-color:transparent;color:var(--accent);padding:0 8px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.seg{display:inline-flex;gap:2px;padding:3px;border-radius:9px;background:var(--sunk)}
+.seg span{height:28px;padding:0 12px;border-radius:7px;font-size:12.5px;font-weight:700;letter-spacing:.05em;color:var(--muted);display:flex;align-items:center}
+.seg span.on{background:var(--raise);color:var(--accent);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.lyr{height:100%;padding:0 16px;display:flex;flex-direction:column;justify-content:center;gap:2px}
+.ln{padding:.38em .7em;border:2px solid transparent;border-radius:12px;font-family:var(--font-lyric);font-size:20px;line-height:1.45;color:var(--muted);text-align:center}
+.ln.on{color:var(--fg);border-color:var(--accent);background:var(--accent-soft)}
+.note{margin:0 16px 10px;padding:10px 12px;border-radius:10px;background:var(--sunk);font-size:13px;line-height:1.5;color:var(--muted)}
+.note b{color:var(--fg)}
+.q{list-style:none;margin:0;padding:0}
+.qr{display:flex;align-items:center;min-height:58px;border-bottom:1px solid var(--line)}
+.qr:first-child{border-top:1px solid var(--line)}
+.qr.cur{background:var(--accent-soft)}
+.qr .g{width:44px;display:flex;justify-content:center;color:var(--faint)}
+.qr .g svg{width:18px;height:18px}
+.qr .t{flex:1;font-size:15px}
+.qr.cur .t{color:var(--accent);font-weight:700}
+.qr .m{display:block;font-size:11.5px;color:var(--muted);margin-top:3px}
+.qr .x{width:46px;display:flex;justify-content:center;color:var(--faint)}
+.qr .x svg{width:18px;height:18px}
+/* bottom: panel bar, then the dock, then the app bar (logo + tabs) */
+.dock{flex:none;display:flex;flex-direction:column;gap:4px;padding:10px 16px 0;border-top:1px solid var(--line);background:var(--bg)}
+.now-t{font-size:15px;font-weight:700}
+.now-s{font-size:12px;color:var(--muted)}
+.track{height:6px;border-radius:3px;background:var(--sunk);margin:10px 0 6px;position:relative}
+.fill{position:absolute;left:0;top:0;bottom:0;width:38%;border-radius:3px;background:var(--accent)}
+.thumb{position:absolute;left:38%;top:50%;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--bg)}
+.times{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted)}
+.transport{display:flex;align-items:center;justify-content:space-between;padding:0 2px}
+.tb{width:50px;height:50px;display:flex;align-items:center;justify-content:center}
+.tb svg{width:26px;height:26px}
+.tb.play{width:62px;height:62px;border-radius:50%;background:var(--accent);color:var(--on-accent)}
+.extras{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:2px}
+.xb{height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--sunk);color:var(--muted);font-size:13px;font-weight:600}
+.xb svg{width:16px;height:16px}
+.xb.on{background:var(--accent-soft);color:var(--accent)}
+.appbar{display:flex;align-items:center;gap:10px;padding:10px 16px 30px;background:var(--bg)}   /* 30: above the home indicator */
+.logo{position:relative;flex:none;height:40px;padding:0 6px;border-radius:10px;display:flex;align-items:center;font-family:var(--font-code);font-size:15px;font-weight:700;letter-spacing:-.02em}
+.logo i{font-style:normal;font-weight:600;color:var(--muted)}
+.logo b{position:relative;isolation:isolate;margin:0 4px;padding:0 3px;color:var(--brand-ink);line-height:1.55}
+.logo b::before{content:"";position:absolute;inset:1px -3px 0;z-index:-1;background:var(--brand);border-radius:2px 6px 3px 7px;transform:skewX(-12deg) rotate(-3deg)}
+.logo .dot{position:absolute;top:6px;right:0;width:8px;height:8px;border-radius:50%;background:#D93A2F;box-shadow:0 0 0 2px var(--bg)}
+.tabs{flex:1;display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:3px;padding:3px;border-radius:12px;background:var(--sunk)}
+.tab{height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:5px;font-size:13.5px;font-weight:600;color:var(--muted)}
+.tab svg{width:17px;height:17px}
+.tab .n{font-size:12px;font-weight:500}
+.tab.on{background:var(--raise);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.home{position:absolute;z-index:6;bottom:8px;left:50%;width:134px;height:5px;margin-left:-67px;border-radius:3px;background:#111}
+/* sheet from the logo */
+.scrim{position:absolute;inset:0;z-index:7;background:rgba(12,14,20,.45);display:flex;align-items:flex-end}
+.sheet{width:100%;padding:6px 16px 34px;border-radius:22px 22px 0 0;background:var(--raise)}
+.sheet h2{margin:12px 0 10px;font-size:16px}
+.stat{margin:0 0 12px;padding:10px 12px;border-radius:10px;background:var(--sunk);font-size:13px;line-height:1.55;color:var(--muted)}
+.stat b{color:var(--fg)}
+.hint{font-size:12.5px;color:var(--muted);margin:10px 0 0;line-height:1.5}
+.tag{position:absolute;z-index:8;right:12px;padding:3px 8px;border-radius:7px;background:#2a2f3d;color:#fff;font-size:11px;font-weight:700}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5.14v13.72a1 1 0 0 0 1.52.85l10.9-6.86a1 1 0 0 0 0-1.7L9.52 4.3A1 1 0 0 0 8 5.14z"/></symbol>
+    <symbol id="i-prev" viewBox="0 0 24 24"><rect fill="currentColor" x="4.5" y="5" width="2.4" height="14" rx="1"/><path fill="currentColor" d="M19.5 6.1v11.8a.9.9 0 0 1-1.38.76L9.2 12.76a.9.9 0 0 1 0-1.52l8.92-5.9a.9.9 0 0 1 1.38.76z"/></symbol>
+    <symbol id="i-next" viewBox="0 0 24 24"><rect fill="currentColor" x="17.1" y="5" width="2.4" height="14" rx="1"/><path fill="currentColor" d="M4.5 6.1v11.8a.9.9 0 0 0 1.38.76l8.92-5.9a.9.9 0 0 0 0-1.52L5.88 5.34a.9.9 0 0 0-1.38.76z"/></symbol>
+    <symbol id="i-back10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/><text x="12.3" y="15.3" text-anchor="middle" font-size="7.8" font-weight="700" fill="currentColor" stroke="none" font-family="sans-serif">10</text></symbol>
+    <symbol id="i-fwd10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/><text x="11.7" y="15.3" text-anchor="middle" font-size="7.8" font-weight="700" fill="currentColor" stroke="none" font-family="sans-serif">10</text></symbol>
+    <symbol id="i-repeat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></symbol>
+    <symbol id="i-gauge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14l4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+    <symbol id="i-disc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/></symbol>
+    <symbol id="i-quote" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8M8 13h5"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></symbol>
+    <symbol id="i-note" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></symbol>
+    <symbol id="i-grip" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  </defs>
+</svg>
+
+<template id="chrome-top"><div class="status"><span>11:39</span><i>▂▄▆ ◠ <b>87</b></i></div><div class="island"></div><div class="fade"></div><div class="home"></div></template>
+<template id="dock">
+  <footer class="dock">
+    <div class="now-t">03. 귓가에서 속삭이는 밤</div>
+    <div class="now-s">3 / 12 · 작품 폴더 · MP3</div>
+    <div class="track"><div class="fill"></div><div class="thumb"></div></div>
+    <div class="times"><span>4:12</span><span>-6:51</span></div>
+    <div class="transport">
+      <div class="tb"><svg><use href="#i-prev"/></svg></div><div class="tb"><svg style="width:30px;height:30px"><use href="#i-back10"/></svg></div>
+      <div class="tb play"><svg style="width:28px;height:28px"><use href="#i-play"/></svg></div>
+      <div class="tb"><svg style="width:30px;height:30px"><use href="#i-fwd10"/></svg></div><div class="tb"><svg><use href="#i-next"/></svg></div>
+    </div>
+    <div class="extras"><div class="xb on"><svg><use href="#i-repeat"/></svg>전체반복</div><div class="xb"><svg><use href="#i-gauge"/></svg>1.0×</div><div class="xb"><svg><use href="#i-moon"/></svg>수면 타이머</div></div>
+  </footer>
+</template>
+
+<div class="row3">
+  <div>
+    <p class="cap">① 가사 탭<small>위에는 아무것도 없어요. 가사 설정은 가사 바로 아래, 탭과 로고는 맨 아래</small></p>
+    <div class="phone">
+      <slot data-t="chrome-top"></slot>
+      <main>
+        <div class="content"><div class="lyr">
+          <div class="ln">처음 뵙겠습니다</div>
+          <div class="ln">오늘 밤은 제가 곁에 있을게요</div>
+          <div class="ln on">천천히 숨을 내쉬어 보세요</div>
+          <div class="ln">그렇지, 잘하고 있어요</div>
+          <div class="ln">조금 더 가까이 갈게요</div>
+          <div class="ln">눈을 감아도 괜찮아요</div>
+        </div></div>
+        <div class="bar"><div class="seg"><span class="on">LRC</span><span>SRT</span></div><span class="spacer"></span><span class="btn"><svg><use href="#i-sliders"/></svg>가사 설정</span></div>
+      </main>
+      <slot data-t="dock"></slot>
+      <div class="appbar"><div class="logo"><i>&lt;</i><b>mark</b><i>&gt;</i></div>
+        <div class="tabs"><div class="tab"><svg><use href="#i-list"/></svg>재생목록 <span class="n">12</span></div><div class="tab"><svg><use href="#i-disc"/></svg>앨범</div><div class="tab on"><svg><use href="#i-quote"/></svg>가사</div></div></div>
+    </div>
+  </div>
+
+  <div>
+    <p class="cap">② 재생목록 탭, 목록을 올려 본 상태<small>목록은 상태 막대 밑 그라데이션 아래로 흐려지며 지나가요</small></p>
+    <div class="phone">
+      <slot data-t="chrome-top"></slot>
+      <main>
+        <div class="content scrolled">
+          <ul class="q">
+            <li class="qr"><span class="g"><svg><use href="#i-grip"/></svg></span><span class="t">01. はじめまして<span class="m">WAV · LRC · SRT</span></span><span class="x"><svg><use href="#i-x"/></svg></span></li>
+            <li class="qr"><span class="g"><svg><use href="#i-grip"/></svg></span><span class="t">02. 耳かき<span class="m">WAV · LRC · SRT</span></span><span class="x"><svg><use href="#i-x"/></svg></span></li>
+            <li class="qr cur"><span class="g"><svg><use href="#i-grip"/></svg></span><span class="t">03. 귓가에서 속삭이는 밤<span class="m">MP3 · LRC · SRT</span></span><span class="x"><svg><use href="#i-x"/></svg></span></li>
+            <li class="qr"><span class="g"><svg><use href="#i-grip"/></svg></span><span class="t">04. 添い寝<span class="m">MP3 · SRT</span></span><span class="x"><svg><use href="#i-x"/></svg></span></li>
+            <li class="qr"><span class="g"><svg><use href="#i-grip"/></svg></span><span class="t">05. おやすみ<span class="m">MP3 · LRC</span></span><span class="x"><svg><use href="#i-x"/></svg></span></li>
+            <li class="qr"><span class="g"><svg><use href="#i-grip"/></svg></span><span class="t">06. 特典トラック<span class="m">MP3</span></span><span class="x"><svg><use href="#i-x"/></svg></span></li>
+          </ul>
+        </div>
+        <div class="bar"><span class="btn"><svg><use href="#i-note"/></svg>파일 추가</span><span class="btn"><svg><use href="#i-folder"/></svg>폴더 추가</span><span class="spacer"></span><span class="btn ghost">선택</span></div>
+      </main>
+      <slot data-t="dock"></slot>
+      <div class="appbar"><div class="logo"><i>&lt;</i><b>mark</b><i>&gt;</i><span class="dot"></span></div>
+        <div class="tabs"><div class="tab on"><svg><use href="#i-list"/></svg>재생목록 <span class="n">12</span></div><div class="tab"><svg><use href="#i-disc"/></svg>앨범</div><div class="tab"><svg><use href="#i-quote"/></svg>가사</div></div></div>
+    </div>
+  </div>
+
+  <div>
+    <p class="cap">③ 로고를 누르면<small>로고가 맨 아래 왼쪽이라 엄지로 바로 눌러요. 새 버전이 있으면 로고에 점</small></p>
+    <div class="phone">
+      <slot data-t="chrome-top"></slot>
+      <main>
+        <div class="content"><div class="lyr">
+          <div class="ln">처음 뵙겠습니다</div>
+          <div class="ln">오늘 밤은 제가 곁에 있을게요</div>
+          <div class="ln on">천천히 숨을 내쉬어 보세요</div>
+          <div class="ln">그렇지, 잘하고 있어요</div>
+          <div class="ln">조금 더 가까이 갈게요</div>
+        </div></div>
+        <div class="bar"><div class="seg"><span class="on">LRC</span><span>SRT</span></div><span class="spacer"></span><span class="btn"><svg><use href="#i-sliders"/></svg>가사 설정</span></div>
+      </main>
+      <slot data-t="dock"></slot>
+      <div class="appbar"><div class="logo"><i>&lt;</i><b>mark</b><i>&gt;</i><span class="dot"></span></div>
+        <div class="tabs"><div class="tab"><svg><use href="#i-list"/></svg>재생목록 <span class="n">12</span></div><div class="tab"><svg><use href="#i-disc"/></svg>앨범</div><div class="tab on"><svg><use href="#i-quote"/></svg>가사</div></div></div>
+      <div class="scrim"><div class="sheet">
+        <h2>&lt;mark&gt;</h2>
+        <p class="stat"><b>새 버전이 있어요</b> · 10월 4일에 올라온 판<br>지금 쓰는 판: 10월 3일</p>
+        <span class="btn primary" style="width:100%;justify-content:center;height:46px"><svg><use href="#i-refresh"/></svg>새로 고침</span>
+        <p class="hint">새로 고치면 재생목록이 비어요. 같은 폴더를 다시 추가하면 순서와 듣던 위치를 이어서 불러와요.</p>
+      </div></div>
+    </div>
+  </div>
+</div>
+<script>
+document.querySelectorAll('slot[data-t]').forEach((s) => s.replaceWith(document.getElementById(s.dataset.t).content.cloneNode(true)));
+</script>
+</body>
+</html>
