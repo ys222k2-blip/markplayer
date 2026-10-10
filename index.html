@@ -2031,9 +2031,9 @@ els.tabLyrics.addEventListener('click', () => tabTo('lyrics'));
    Touch only: a mouse drag selects text, and a trackpad's sideways swipe is the browser's back/forward.
    The panels let the browser pan only vertically (touch-action: pan-y), so a mostly vertical drag stays a scroll
    and a sideways one reaches here. The panel follows the finger; far or fast enough switches the tab,
-   anything less springs back. Left alone: the screen edges (the system's back gesture), the reorder grip,
-   a text selection, and a second finger. The tap that ends a swipe is swallowed so it can't play a row,
-   seek to a lyric line or open a link. */
+   anything less springs back. The tabs go round: past 가사 comes 재생목록, and back. Left alone: the screen edges
+   (the system's back gesture), the reorder grip, a text selection, and a second finger. The tap that ends a swipe
+   is swallowed so it can't play a row, seek to a lyric line or open a link. */
 const mainEl = document.querySelector('main');
 let swipe = null, noClickUntil = 0;
 function springBack(p) {
@@ -2061,14 +2061,12 @@ mainEl.addEventListener('pointermove', (e) => {
     s.lock = 'x';
     s.x += Math.sign(dx) * 10;   // follow from here on, without a jump
   }
-  const d = e.clientX - s.x, i = TABS.indexOf(state.tab);
-  const end = (d > 0 && i === 0) || (d < 0 && i === TABS.length - 1);
+  const d = e.clientX - s.x;
   s.v = 0.6 * s.v + 0.4 * (d - s.dx) / Math.max(1, e.timeStamp - s.pt);
   s.dx = d;
   s.pt = e.timeStamp;
-  const shown = end ? d / 4 : d;   // no tab that way: the panel gives only a little
-  s.panel.style.transform = `translateX(${shown}px)`;
-  s.panel.style.opacity = String(1 - 0.35 * Math.min(1, Math.abs(shown) / mainEl.clientWidth));
+  s.panel.style.transform = `translateX(${d}px)`;
+  s.panel.style.opacity = String(1 - 0.35 * Math.min(1, Math.abs(d) / mainEl.clientWidth));
 });
 function endSwipe(e) {
   const s = swipe;
@@ -2076,10 +2074,10 @@ function endSwipe(e) {
   swipe = null;
   if (s.lock !== 'x') return;
   noClickUntil = e.timeStamp + 400;
-  const j = TABS.indexOf(state.tab) + (s.dx < 0 ? 1 : -1);
+  const j = (TABS.indexOf(state.tab) + (s.dx < 0 ? 1 : -1) + TABS.length) % TABS.length;
   const far = Math.abs(s.dx) > Math.min(100, mainEl.clientWidth * 0.25);
   const flick = Math.abs(s.dx) > 40 && Math.abs(s.v) > 0.4 && Math.sign(s.v) === Math.sign(s.dx);
-  if (e.type === 'pointerup' && j >= 0 && j < TABS.length && (far || flick)) {
+  if (e.type === 'pointerup' && (far || flick)) {
     s.panel.style.transition = s.panel.style.transform = s.panel.style.opacity = '';
     setTab(TABS[j], s.dx < 0 ? 1 : -1);
   } else springBack(s.panel);
