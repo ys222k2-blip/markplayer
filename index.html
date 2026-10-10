@@ -286,6 +286,14 @@ body.playing .a-song .eq{display:inline-flex}
 .stepper output{flex:1;min-width:0;text-align:center;font-weight:700;font-size:15px;font-variant-numeric:tabular-nums}
 .stepper .btn{padding:0 10px;font-variant-numeric:tabular-nums}
 .sw-row{display:flex;align-items:center;gap:12px;padding:14px 0;border-top:1px solid var(--line)}
+/* a setting whose control fits beside its name: the name left, the control right;
+   a narrow screen puts the control on its own line, still at the right. A hint takes the whole line under them. */
+.set.inline{flex-direction:row;flex-wrap:wrap;align-items:center;column-gap:12px}
+.set.inline>.set-h{flex:1 0 auto}
+.set.inline>.stepper,.set.inline>.seg{margin-left:auto}
+.set.inline>.hint{flex-basis:100%}
+.set.inline .stepper output{flex:none;min-width:50px}
+.set.inline .stepper .btn{padding:0 8px}
 .sw-row .set-h{flex:1;min-width:0}
 .switch{position:relative;flex:none;width:50px;height:30px;border-radius:15px;background:var(--line);transition:background .2s}
 .switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--knob);box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s}
@@ -2192,8 +2200,8 @@ const sleepSheet = () => {
 const offText = (o) => (o === 0 ? '0.0초' : `${o > 0 ? '+' : '−'}${Math.abs(o).toFixed(1)}초`);
 const lyrSheet = () => {
   const c = cur(), off = offsetOf(c), dis = c ? '' : ' disabled';
-  return `<div class="set">
-      <div class="set-h"><b>가사 싱크</b><small>${c ? `‘${esc(c.name)}’에만 적용돼요` : '곡을 고르면 조절할 수 있어요'}</small></div>
+  return `<div class="set inline">
+      <div class="set-h"><b>가사 싱크</b></div>
       <div class="stepper">
         <button class="btn" type="button" data-act="off:-0.5"${dis}>−0.5</button>
         <button class="btn" type="button" data-act="off:-0.1"${dis}>−0.1</button>
@@ -2201,9 +2209,9 @@ const lyrSheet = () => {
         <button class="btn" type="button" data-act="off:0.1"${dis}>+0.1</button>
         <button class="btn" type="button" data-act="off:0.5"${dis}>+0.5</button>
       </div>
-      <p class="hint">가사가 노래보다 먼저 나오면 ＋, 늦게 나오면 −로 맞춰요.${off ? ' <button class="btn ghost sm" type="button" data-act="off:reset" style="height:auto;padding:0">0으로 되돌리기</button>' : ''}</p>
+      <p class="hint">가사가 노래보다 먼저 나오면 ＋, 늦게 나오면 −로, 곡마다 따로 맞춰요.${off ? ' <button class="btn ghost sm" type="button" data-act="off:reset" style="height:auto;padding:0">0으로 되돌리기</button>' : ''}</p>
     </div>
-    <div class="set">
+    <div class="set inline">
       <div class="set-h"><b>글자 크기</b></div>
       <div class="stepper">
         <button class="btn" type="button" data-act="fs:-2" aria-label="글자 작게"${state.fontSize <= 14 ? ' disabled' : ''}>가 −</button>
@@ -2211,22 +2219,22 @@ const lyrSheet = () => {
         <button class="btn" type="button" data-act="fs:2" aria-label="글자 크게"${state.fontSize >= 34 ? ' disabled' : ''}>가 +</button>
       </div>
     </div>
-    <div class="set">
+    <div class="set inline">
       <div class="set-h"><b>정렬</b></div>
       <div class="seg" role="group" aria-label="가사 정렬">
         <button type="button" data-act="al:center" class="${state.align === 'center' ? 'on' : ''}" aria-pressed="${state.align === 'center'}">가운데</button>
         <button type="button" data-act="al:left" class="${state.align === 'left' ? 'on' : ''}" aria-pressed="${state.align === 'left'}">왼쪽</button>
       </div>
     </div>
-    <div class="set">
+    <div class="set inline">
       <div class="set-h"><b>글꼴</b></div>
       <div class="seg" role="group" aria-label="글꼴">
         <button type="button" data-act="ff:serif" class="${state.fontFam === 'serif' ? 'on' : ''}" aria-pressed="${state.fontFam === 'serif'}">명조</button>
         <button type="button" data-act="ff:sans" class="${state.fontFam === 'sans' ? 'on' : ''}" aria-pressed="${state.fontFam === 'sans'}">고딕</button>
       </div>
     </div>
-    <div class="set">
-      <div class="set-h"><b>자막 언어</b><small>일본어 자막(.ja.srt)이 있는 곡은 한국어 아래에 일본어를 작게 함께 보여줘요</small></div>
+    <div class="set inline">
+      <div class="set-h"><b>자막 언어</b></div>
       <div class="seg" role="group" aria-label="자막 언어">
         <button type="button" data-act="ja:ko" class="${state.jaMode === 'ko' ? 'on' : ''}" aria-pressed="${state.jaMode === 'ko'}">한국어만</button>
         <button type="button" data-act="ja:both" class="${state.jaMode === 'both' ? 'on' : ''}" aria-pressed="${state.jaMode === 'both'}">한국어 + 일본어</button>
@@ -2457,25 +2465,27 @@ const segBtns = (act, opts, cur) => opts.map(([k, label]) =>
   `<button type="button" data-act="${act}:${k}" class="${cur === k ? 'on' : ''}" aria-pressed="${cur === k}">${label}</button>`).join('');
 const genSheet = () => {
   const mine = dayText(document.lastModified);
-  return `<div class="set">
-      <div class="set-h"><b>화면 테마</b><small>시스템은 휴대폰의 화면 모드를 따라가요</small></div>
+  // after a reload the empty list's card tells how to pick up where it stopped
+  const hint = [mine ? `지금 쓰는 판: ${mine}` : '', state.queue.length ? '새로 고치면 재생목록이 비어요' : ''].filter(Boolean).join(' · ');
+  return `<div class="set inline">
+      <div class="set-h"><b>화면 테마</b></div>
       <div class="seg" role="group" aria-label="화면 테마">${segBtns('theme', Object.entries(THEMES), state.theme)}</div>
     </div>
-    <div class="set">
-      <div class="set-h"><b>곡·작품 이름</b><small>재생목록·앨범·잠금 화면의 이름이에요. 기본은 파일·폴더 이름 그대로, 한/일은 한국어를 크게 일본어를 작게 보여줘요. 한국어·일본어 이름은 자막 저장소의 트랙명.md에서 가져오고, 없으면 기본 이름을 써요</small></div>
+    <div class="set inline">
+      <div class="set-h"><b>곡·작품 이름</b></div>
       <div class="seg" role="group" aria-label="곡·작품 이름">${segBtns('names', Object.entries(NAME_MODES), state.names)}</div>
     </div>
     <div class="sw-row">
-      <div class="set-h"><b>하위 폴더도 추가</b><small>폴더를 추가하면 그 안의 폴더에 든 곡도 넣어요. mp3·wav처럼 같은 곡이 든 폴더가 함께 있으면 두 번 들어갈 수 있어요</small></div>
+      <div class="set-h"><b>하위 폴더도 추가</b><small>같은 곡이 든 폴더가 함께 있으면 두 번 들어갈 수 있어요</small></div>
       <button class="switch" type="button" role="switch" aria-checked="${state.subDirs}" aria-label="하위 폴더도 추가" data-act="sub"></button>
     </div>
-    <div class="set">
-      <div class="set-h"><b>건너뛰기 간격</b><small>재생 칸의 뒤로·앞으로 버튼이 움직이는 만큼이에요</small></div>
+    <div class="set inline">
+      <div class="set-h"><b>건너뛰기 간격</b></div>
       <div class="seg" role="group" aria-label="건너뛰기 간격">${segBtns('skip', SKIPS.map((n) => [n, n + '초']), state.skip)}</div>
     </div>
     <div class="set">
       <button class="btn wide" type="button" data-act="app:reload"><svg><use href="#i-refresh"/></svg>새로 고침</button>
-      <p class="hint">${mine ? `지금 쓰는 판: ${mine} · ` : ''}홈 화면 앱에는 새로 고침 버튼이 없어서 여기서 새 판으로 바꿔요.${state.queue.length ? ' 새로 고치면 재생목록이 비어요. 같은 폴더를 다시 추가하면 순서와 듣던 위치를 이어서 불러와요.' : ''}</p>
+      ${hint ? `<p class="hint">${hint}</p>` : ''}
     </div>`;
 };
 const SETTINGS = { gen: ['설정', genSheet], lyr: ['설정', lyrSheet], repo: ['자막 저장소', repoSheet] };
