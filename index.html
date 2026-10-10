@@ -286,7 +286,7 @@ body.playing .a-song .eq{display:inline-flex}
 .stepper output{flex:1;min-width:0;text-align:center;font-weight:700;font-size:15px;font-variant-numeric:tabular-nums}
 .stepper .btn{padding:0 10px;font-variant-numeric:tabular-nums}
 .sw-row{display:flex;align-items:center;gap:12px;padding:14px 0;border-top:1px solid var(--line)}
-/* a setting whose control fits beside its name (the lyric settings): the name left, the control right;
+/* a setting whose control fits beside its name: the name left, the control right;
    a narrow screen puts the control on its own line, still at the right. A hint takes the whole line under them. */
 .set.inline{flex-direction:row;flex-wrap:wrap;align-items:center;column-gap:12px}
 .set.inline>.set-h{flex:1 0 auto}
@@ -2465,22 +2465,22 @@ const segBtns = (act, opts, cur) => opts.map(([k, label]) =>
   `<button type="button" data-act="${act}:${k}" class="${cur === k ? 'on' : ''}" aria-pressed="${cur === k}">${label}</button>`).join('');
 const genSheet = () => {
   const mine = dayText(document.lastModified);
-  const hint = [mine ? `지금 쓰는 판: ${mine}` : '',
-    state.queue.length ? '새로 고치면 재생목록이 비어요. 같은 폴더를 다시 추가하면 순서와 듣던 위치를 이어서 불러와요.' : ''].filter(Boolean).join(' · ');
-  return `<div class="set">
-      <div class="set-h"><b>화면 테마</b><small>시스템은 휴대폰의 화면 모드를 따라가요</small></div>
+  // after a reload the empty list's card tells how to pick up where it stopped
+  const hint = [mine ? `지금 쓰는 판: ${mine}` : '', state.queue.length ? '새로 고치면 재생목록이 비어요' : ''].filter(Boolean).join(' · ');
+  return `<div class="set inline">
+      <div class="set-h"><b>화면 테마</b></div>
       <div class="seg" role="group" aria-label="화면 테마">${segBtns('theme', Object.entries(THEMES), state.theme)}</div>
     </div>
-    <div class="set">
-      <div class="set-h"><b>곡·작품 이름</b><small>재생목록·앨범·잠금 화면의 이름이에요. 기본은 파일·폴더 이름 그대로, 한/일은 한국어를 크게 일본어를 작게 보여줘요. 한국어·일본어 이름은 자막 저장소의 트랙명.md에서 가져오고, 없으면 기본 이름을 써요</small></div>
+    <div class="set inline">
+      <div class="set-h"><b>곡·작품 이름</b></div>
       <div class="seg" role="group" aria-label="곡·작품 이름">${segBtns('names', Object.entries(NAME_MODES), state.names)}</div>
     </div>
     <div class="sw-row">
-      <div class="set-h"><b>하위 폴더도 추가</b><small>폴더를 추가하면 그 안의 폴더에 든 곡도 넣어요. mp3·wav처럼 같은 곡이 든 폴더가 함께 있으면 두 번 들어갈 수 있어요</small></div>
+      <div class="set-h"><b>하위 폴더도 추가</b><small>같은 곡이 든 폴더가 함께 있으면 두 번 들어갈 수 있어요</small></div>
       <button class="switch" type="button" role="switch" aria-checked="${state.subDirs}" aria-label="하위 폴더도 추가" data-act="sub"></button>
     </div>
-    <div class="set">
-      <div class="set-h"><b>건너뛰기 간격</b><small>재생 칸의 뒤로·앞으로 버튼이 움직이는 만큼이에요</small></div>
+    <div class="set inline">
+      <div class="set-h"><b>건너뛰기 간격</b></div>
       <div class="seg" role="group" aria-label="건너뛰기 간격">${segBtns('skip', SKIPS.map((n) => [n, n + '초']), state.skip)}</div>
     </div>
     <div class="set">
