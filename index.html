@@ -112,6 +112,8 @@ main{flex:1;min-height:0;position:relative;display:flex;flex-direction:column;ov
 .title-btn{flex:1;min-width:0;padding:9px 0;text-align:left;display:flex;flex-direction:column;gap:4px}
 .t{font-size:15px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
 .row.cur .t{color:var(--accent);font-weight:700}
+/* the name in the other language (settings › 곡·작품 이름 › 한/일, 일/한): small and quiet under the first */
+.t2{margin-top:-2px;font-size:12.5px;line-height:1.3;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .meta{display:flex;align-items:center;gap:5px;min-width:0;font-size:11.5px;color:var(--muted)}
 .chip{flex:none;padding:0 5px;border:1px solid var(--line);border-radius:4px;font-size:10.5px;font-weight:700;letter-spacing:.04em;line-height:16px;color:var(--muted)}
 .chip.ly{border-color:var(--accent-line);color:var(--accent)}
@@ -202,8 +204,12 @@ main:has(.toast:not([hidden])) .follow{bottom:72px}
 .cover.has{box-shadow:0 10px 26px rgba(21,25,37,.22)}
 .a-info{display:flex;flex-direction:column;gap:16px}
 .a-title{margin:0;font-size:21px;font-weight:700;line-height:1.35;word-break:keep-all;overflow-wrap:anywhere}
-.a-song{margin:6px 0 0;display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--muted)}
+.a-song{margin:6px 0 0;display:flex;align-items:flex-start;gap:6px;font-size:13.5px;color:var(--muted)}
+.a-song .eq{margin-top:4px}   /* level with the first line when a second name sits under it */
 .a-song span:last-child{min-width:0;overflow-wrap:anywhere}
+.a-alt{margin:6px 0 0;font-size:14.5px;line-height:1.4;color:var(--muted);word-break:keep-all;overflow-wrap:anywhere}
+.a-title:lang(ja),.a-alt:lang(ja){word-break:normal}
+.a-song small{display:block;margin-top:2px;font-size:12.5px;opacity:.8}
 body.playing .a-song .eq{display:inline-flex}
 .a-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 .a-chips .chip{padding:0 9px;border-radius:7px;font-size:13.5px;line-height:26px}   /* bigger than the queue rows' chips */
@@ -591,11 +597,13 @@ const RATES = [0.5, 0.75, 0.9, 1, 1.1, 1.25, 1.5, 2];
 const SLEEPS = [10, 15, 20, 30, 45, 60, 90, 120, 150, 180];
 const SKIPS = [5, 10, 15, 30];
 const THEMES = { auto: '시스템', light: '밝게', dark: '어둡게' };
+// how song and work names show: as the files are named, or in Korean or Japanese from the repository (koja: Korean big, Japanese small)
+const NAME_MODES = { orig: '기본', ko: '한국어', ja: '일본어', koja: '한/일', jako: '일/한' };
 const sleepText = (m) => (m < 60 ? `${m}분` : m % 60 ? `${Math.floor(m / 60)}시간 ${m % 60}분` : `${m / 60}시간`);
 
 const savedMode = store.get('mode', 'all');
 const savedRate = store.get('rate', 1);
-const savedTheme = store.get('theme', 'auto'), savedSkip = +store.get('skip', 10);
+const savedTheme = store.get('theme', 'auto'), savedSkip = +store.get('skip', 10), savedNames = store.get('names', 'orig');
 const state = {
   queue: [], curId: null,
   mode: MODES[savedMode] ? savedMode : 'all',
@@ -612,6 +620,7 @@ const state = {
   theme: THEMES[savedTheme] ? savedTheme : 'auto',
   subDirs: !!store.get('subDirs', false),   // a picked or dropped folder brings its subfolders' files too
   skip: SKIPS.includes(savedSkip) ? savedSkip : 10,
+  names: NAME_MODES[savedNames] ? savedNames : 'orig',
   select: false, selected: new Set(),
   sleepAt: 0, sleepEnd: false,
   history: [], played: new Set(),
@@ -803,8 +812,8 @@ function buildRepoIndex(files) {
 }
 
 // A song's RJ code (its file name first, then its folders from the inside out) picks the repository folders,
-// where the track is found by name, or by track number when that is unique. Without a code: a track of the
-// same name in a folder named after the voice actor, else anywhere in the repository.
+// where the track is found by name (Japanese, or Korean through 트랙명.md), or by track number when that is unique.
+// Without a code: a track of the same name in a folder named after the voice actor, else anywhere in the repository.
 function matchRepo(list) {
   const idx = repo.idx, found = new Map(), score = new Map();
   for (const it of list) {
@@ -817,11 +826,12 @@ function matchRepo(list) {
     let cands = [];
     if (code) {
       const ws = idx.byCode.get(code) || [];
-      for (const w of ws) { const tr = w.tracks.get(key); if (tr) cands.push({ w, tr, how: 'code' }); }
+      for (const w of ws) { const tr = w.tracks.get(key) || koAlias(w, key); if (tr) cands.push({ w, tr, how: 'code' }); }
       const n = cands.length ? null : trackNum(it.base);
       if (n != null) for (const w of ws) { const t = w.nums.get(n); if (t && t.length === 1) cands.push({ w, tr: t[0], how: 'num' }); }
     } else {
-      const hits = idx.byKey.get(key) || [];
+      let hits = idx.byKey.get(key) || [];
+      if (!hits.length && repo.ko) for (const w of idx.works.values()) { const tr = koAlias(w, key); if (tr) hits.push([w, tr]); }
       const actor = hits.filter(([w]) => !w.code && w.words.some((x) => segs.some((s) => s.includes(x))));
       cands = (actor.length ? actor : hits).map(([w, tr]) => ({ w, tr, how: actor.length ? 'actor' : 'name' }));
     }
@@ -901,30 +911,94 @@ function parseKoTitles(text) {
   }
   return out.map(([k, t]) => [normKey(k), t.replace(/\\(.)/g, '$1').trim()]).filter(([, t]) => t && !t.startsWith('번역 필요:'));
 }
-// the list of works sits next to the work folders; a folder's own README.md names its tracks
+/* A work folder's 트랙명.md (written by the repository's names tool): the work's Korean name and a table of its
+   track file names, Japanese ↔ Korean. Markdown signs in a cell are escaped with '\', a '|' as '\|'.
+     - 한국어: Korean work name
+     | 번호 | 일본어 파일명 | 한국어 파일명 |
+     | 1 | 1.コスプレ… | 1.코스프레… |                                                          */
+const NAMES_FILE = '트랙명.md';
+function mdCells(s) {
+  const out = [];
+  let cell = '';
+  for (let i = 0; i < s.length; i++) {
+    if (s[i] === '\\' && i + 1 < s.length) cell += s[++i];
+    else if (s[i] === '|') { out.push(cell.trim()); cell = ''; }
+    else cell += s[i];
+  }
+  out.push(cell.trim());
+  return out;
+}
+function parseNames(text) {
+  let title = '', m;
+  const rows = [];
+  for (const line of text.replace(/\r\n?/g, '\n').split('\n')) {
+    if ((m = /^-\s*한국어:\s*(.*?)\s*$/.exec(line))) { title = m[1].replace(/\\(.)/g, '$1'); continue; }
+    if (!(m = /^\|(.*)\|\s*$/.exec(line))) continue;
+    const cells = mdCells(m[1]), ja = cells[cells.length - 2], ko = cells[cells.length - 1];
+    if (cells.length < 2 || ko === '한국어 파일명' || !/[^-:\s]/.test(cells.join(''))) continue;   // the head row, the rule under it
+    if (ja && ko) rows.push([ja, ko]);
+  }
+  return { title, rows };
+}
+// runs fn over the list, n at a time
+async function eachLimit(list, n, fn) {
+  let i = 0;
+  const worker = async () => { while (i < list.length) await fn(list[i++]); };
+  await Promise.all(Array.from({ length: Math.min(n, list.length) }, worker));
+}
+// the list of works sits next to the work folders; a folder's own README.md names its tracks, its 트랙명.md too
 async function readKoTitles(tree, files) {
   const root = files.some(([p]) => p.startsWith('subtitles/')) ? 'subtitles/' : '';
-  const ko = { root, works: [], tracks: [] };
-  for (const x of tree) {
-    if (x.type !== 'blob' || !x.path.startsWith(root) || !/^(?:[^/]+\/)?README\.md$/i.test(x.path.slice(root.length))) continue;
-    const pairs = parseKoTitles(await repoText(x.sha));
-    const dir = x.path.slice(0, x.path.lastIndexOf('/'));
+  const ko = { root, works: [], tracks: [], names: [] };
+  const isNames = (x) => x.path.normalize('NFC').endsWith('/' + NAMES_FILE);
+  const todo = tree.filter((x) => x.type === 'blob' && x.path.startsWith(root)
+    && (/^(?:[^/]+\/)?README\.md$/i.test(x.path.slice(root.length)) || isNames(x)));
+  await eachLimit(todo, 6, async (x) => {
+    const text = await repoText(x.sha), dir = x.path.slice(0, x.path.lastIndexOf('/'));
+    if (isNames(x)) { const n = parseNames(text); ko.names.push([dir, n.title, n.rows]); return; }
+    const pairs = parseKoTitles(text);
     if (x.path.slice(root.length).includes('/')) for (const [k, t] of pairs) ko.tracks.push([dir, k, t]);
     else ko.works.push(...pairs);
-  }
+  });
   return ko;
 }
+// a list kept before 트랙명.md was read has no names: such a list is fetched once more
+const koFresh = (t) => !!(t && t.ko && t.ko.names);
+// the 트랙명.md of a repository folder: its own, or the work folder's it sits in (…/work/SEなし)
+function namesTable(dir) {
+  if (!repo.ko) return null;
+  for (let d = dir; d; d = d.slice(0, Math.max(0, d.lastIndexOf('/')))) { const t = repo.ko.names.get(d); if (t) return t; }
+  return null;
+}
+// the Korean names the repository lists for a matched song's work and track: its 트랙명.md, then the README lists
 function koTitles(r) {
   const ko = repo.ko;
   if (!ko || !r) return {};
   const top = r.dir.startsWith(ko.root) ? r.dir.slice(ko.root.length).split('/')[0] : '';
-  return { work: ko.works.get(koKey(top)) || '', track: ko.tracks.get(r.dir + '\n' + koKey(r.track)) || '' };
+  const t = namesTable(r.dir);
+  return {
+    work: (t && t.title) || ko.works.get(koKey(top)) || '',
+    track: (t && t.ko.get(normKey(r.track))) || ko.tracks.get(r.dir + '\n' + koKey(r.track)) || '',
+  };
+}
+// a song renamed to its Korean name (the repository's name-switch bat does that) finds its track through 트랙명.md
+function koAlias(w, key) {
+  const t = namesTable(w.dir), ja = t && t.back.get(key);
+  return (ja && w.tracks.get(ja)) || null;
 }
 
 function applyTree(t) {
   repo.tree = t;
   repo.idx = buildRepoIndex(t.files);
-  repo.ko = t.ko ? { root: t.ko.root, works: new Map(t.ko.works), tracks: new Map(t.ko.tracks.map(([d, k, v]) => [d + '\n' + k, v])) } : null;
+  repo.ko = t.ko ? {
+    root: t.ko.root, works: new Map(t.ko.works), tracks: new Map(t.ko.tracks.map(([d, k, v]) => [d + '\n' + k, v])),
+    // folder -> { title, ko: Japanese name -> Korean, back: Korean name -> Japanese (normalized) }
+    names: new Map((t.ko.names || []).map(([d, title, rows]) => [d, {
+      title,
+      ko: new Map(rows.map(([ja, ko]) => [normKey(ja), ko])),
+      back: new Map(rows.map(([ja, ko]) => [normKey(ko), normKey(ja)])),
+    }])),
+  } : null;
   repo.checkedAt = t.at || 0;
 }
 async function repoLoadCached() {
@@ -942,13 +1016,13 @@ function repoSync(force) {
     try {
       await repo.loading;
       if (!repo.cfg.token) return false;
-      if (!force && repo.idx && repo.tree.ko && Date.now() - repo.checkedAt < 10 * 60000) return false;
+      if (!force && repo.idx && koFresh(repo.tree) && Date.now() - repo.checkedAt < 10 * 60000) return false;
       const { name, token } = repo.cfg;
       setRepoStatus('busy');
       const branch = repo.cfg.branch || (await gh(rp(name), token)).default_branch || 'main';
       const head = await gh(`${rp(name)}/branches/${encodeURIComponent(branch)}`, token);
       let changed = false;
-      if (!repo.tree || repo.tree.commit !== head.commit.sha || !repo.tree.ko) {   // a list kept before titles were read: once more
+      if (!repo.tree || repo.tree.commit !== head.commit.sha || !koFresh(repo.tree)) {
         const t = await gh(`${rp(name)}/git/trees/${head.commit.commit.tree.sha}?recursive=1`, token);
         if (repo.cfg.name !== name) return false;   // switched to another repository meanwhile
         const files = t.tree.filter((x) => x.type === 'blob' && /\.(lrc|srt|vtt)$/i.test(x.path)).map((x) => [x.path, x.sha]);
@@ -1188,7 +1262,6 @@ function onTrackChanged() {
   renderNow();
   renderProgress();
   renderPlayState();
-  updateMediaMeta();
   loadLyrics();
   saveSession(true);
 }
@@ -1197,10 +1270,12 @@ function renderNow() {
   renderAlbum();
   const c = cur();
   const n = state.queue.length;
-  els.nowTitle.textContent = c ? c.name : n ? '재생할 곡을 골라주세요' : '곡을 추가해주세요';
+  const names = c ? shownNames(c) : null;
+  els.nowTitle.textContent = c ? names.song[0] : n ? '재생할 곡을 골라주세요' : '곡을 추가해주세요';
+  updateMediaMeta(names);
   if (!c) { els.nowSub.textContent = ''; return; }
   const bits = [`${idxOf(c.id) + 1} / ${n}`];
-  if (c.dir) bits.push(c.dir.split('/').pop());
+  if (names.folder) bits.push(names.folder);
   if (c.ext) bits.push(c.ext.toUpperCase());
   els.nowSub.textContent = bits.join(' · ');
 }
@@ -1272,13 +1347,17 @@ function renderSkip() {
 
 /* ---------- lock screen controls ---------- */
 const ms = 'mediaSession' in navigator ? navigator.mediaSession : null;
-function updateMediaMeta() {
+// names: the current song's shownNames, or null. Set only when it changes (the dock renders often).
+let metaKey = null;
+function updateMediaMeta(names) {
   if (!ms || typeof MediaMetadata === 'undefined') return;
-  const c = cur();
+  const key = names ? [names.song[0], names.folder, !!artUrl].join('\n') : '';
+  if (key === metaKey) return;
+  metaKey = key;
   try {
-    ms.metadata = c ? new MediaMetadata({
-      title: c.name,
-      artist: c.dir ? c.dir.split('/').pop() : '',
+    ms.metadata = names ? new MediaMetadata({
+      title: names.song[0],
+      artist: names.folder,
       album: '<mark>',
       artwork: artUrl ? [{ src: artUrl, sizes: '256x256', type: 'image/png' }] : [],
     }) : null;
@@ -1310,11 +1389,13 @@ function rowHTML(it) {
   const lead = state.select
     ? '<span class="check"><svg><use href="#i-check"/></svg></span>'
     : '<svg><use href="#i-grip"/></svg>';
+  const { song: [name, name2], album } = shownNames(it);
   return `<li class="row${isCur ? ' cur' : ''}${it.bad ? ' bad' : ''}${sel ? ' sel' : ''}" data-id="${it.id}">`
     + `<span class="grip" aria-hidden="true">${lead}</span>`
-    + `<button class="title-btn" type="button"${state.select ? ` aria-pressed="${sel}"` : ''}><span class="t">${esc(it.name)}</span>`
-    + `<span class="meta"><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>${chips.join('')}${it.dir ? `<span class="dir">${esc(it.dir)}</span>` : ''}</span></button>`
-    + (state.select ? '' : `<button class="rm" type="button" aria-label="${esc(it.name)} 목록에서 빼기"><svg><use href="#i-x"/></svg></button>`)
+    + `<button class="title-btn" type="button"${state.select ? ` aria-pressed="${sel}"` : ''}><span class="t"${jaLang(name)}>${esc(name)}</span>`
+    + (name2 ? `<span class="t2"${jaLang(name2)}>${esc(name2)}</span>` : '')
+    + `<span class="meta"><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>${chips.join('')}${album ? `<span class="dir">${esc(album)}</span>` : ''}</span></button>`
+    + (state.select ? '' : `<button class="rm" type="button" aria-label="${esc(name)} 목록에서 빼기"><svg><use href="#i-x"/></svg></button>`)
     + '</li>';
 }
 
@@ -1783,8 +1864,9 @@ const stripCode = (s) => s.replace(/[[(【［（]?\s*rj\d{6}(?:\d{2})?\s*[\])】
   .replace(/\s{2,}/g, ' ').replace(/^[\s_.\-–—・:：]+|[\s_.\-–—・:：]+$/g, '');
 
 // A song's work: its RJ code (file name first, then its folders from the inside out, then its subtitle folder)
-// and a title: the Korean one the repository lists, else the subtitle folder named after the work,
-// else the local folder without the code
+// and names in each language, picked by the settings (pickName). The work as it is named: the local folder without
+// the code, else the subtitle folder named after the work. In Japanese: that subtitle folder (the original title).
+// In Korean: what the repository lists. The song: its file name, the subtitle file's (Japanese) and the Korean one listed.
 function workOf(it) {
   const segs = it.dir ? it.dir.split('/') : [];
   const r = it.repo && repo.cfg.on ? it.repo : null;
@@ -1792,16 +1874,34 @@ function workOf(it) {
   for (let i = segs.length - 1; i >= 0 && !code; i--) if ((code = codeOf(segs[i]))) at = i;
   const rcode = r ? codeOf(r.name) : '';
   if (!code) code = rcode;                       // matched by name inside a work's subtitle folder
-  const ko = koTitles(r);                        // Korean titles listed in the repository come first
-  let title = ko.work ? stripCode(ko.work) : code && rcode === code ? stripCode(r.name.replace(/_\d+$/, '')) : '';
-  for (let i = segs.length - 1; i >= Math.max(at, 0) && !title; i--) if (!FORMAT_DIR.test(normKey(segs[i]))) title = stripCode(segs[i]);
+  const ko = koTitles(r);
+  const ja = code && rcode === code ? stripCode(r.name.replace(/_\d+$/, '')) : '';
+  let local = '';
+  for (let i = segs.length - 1; i >= Math.max(at, 0) && !local; i--) if (!FORMAT_DIR.test(normKey(segs[i]))) local = stripCode(segs[i]);
   return {
     code,
-    title: title || (code ? '' : it.name),          // shown after the RJ code
-    song: ko.track || it.name,
+    album: pickName({ orig: local || ja, ko: ko.work ? stripCode(ko.work) : '', ja }),   // [big, small], shown after the RJ code
+    song: pickName({ orig: it.name, ko: ko.track || '', ja: r ? r.track : '' }),
     store: code ? `https://www.dlsite.com/maniax/work/=/product_id/${code.toUpperCase()}.html` : '',
     subs: r && repo.cfg.name ? repoFolderUrl(r.dir) : '',
   };
+}
+// [the name to show, a second one shown small under it or '']: the language the settings ask for,
+// the name as it is when the repository lists none
+function pickName(n) {
+  const m = state.names;
+  if (m === 'orig') return [n.orig, ''];
+  const [a, b] = m === 'ko' || m === 'koja' ? [n.ko, n.ja] : [n.ja, n.ko];
+  const big = a || n.orig;
+  return [big, (m === 'koja' || m === 'jako') && b && normKey(b) !== normKey(big) ? b : ''];
+}
+// lang="ja" on a Japanese name (kana, no hangul): Japanese glyphs, and it wraps between any two letters as Japanese does
+const jaLang = (s) => (/[\u3040-\u30ff]/.test(s) && !/[\uac00-\ud7a3]/.test(s) ? ' lang="ja"' : '');
+// the song's names and the work's name for a row, the dock and the lock screen; as the files are named by default
+function shownNames(it) {
+  if (state.names === 'orig') return { song: [it.name, ''], album: it.dir || '', folder: it.dir ? it.dir.split('/').pop() : '' };
+  const w = workOf(it), album = w.album[0] || (w.code ? w.code.toUpperCase() : it.dir || '');
+  return { song: w.song, album, folder: album };
 }
 
 // DLsite keeps a work's main image under its code rounded up to the thousand: RJ01014447 -> RJ01015000/
@@ -1881,9 +1981,12 @@ function renderAlbum() {
     const both = !!(w.store && w.subs);   // side by side: short names, so neither is cut
     if (w.store) links.push(outLink(w.store, 'i-bag', both ? 'DLsite' : 'DLsite에서 보기'));
     if (w.subs) links.push(outLink(w.subs, 'i-cloud', both ? '자막 폴더' : '자막 폴더 열기'));
-    const head = w.code ? `<span class="a-code">${esc(w.code.toUpperCase())}</span>${w.title ? ' ' + esc(w.title) : ''}` : esc(w.title);
-    html = `<div><h2 class="a-title">${head}</h2>`
-      + (w.title !== w.song ? `<p class="a-song"><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span><span>${esc(w.song)}</span></p>` : '')
+    // no work to name (a loose file): the song is the heading
+    const [title, title2] = w.code || w.album[0] ? w.album : w.song, [song, song2] = w.song;
+    const head = w.code ? `<span class="a-code">${esc(w.code.toUpperCase())}</span>${title ? ' ' + esc(title) : ''}` : esc(title);
+    html = `<div><h2 class="a-title"${jaLang(title)}>${head}</h2>`
+      + (title2 ? `<p class="a-alt"${jaLang(title2)}>${esc(title2)}</p>` : '')
+      + (title !== song ? `<p class="a-song"><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span><span><span${jaLang(song)}>${esc(song)}</span>${song2 ? `<small${jaLang(song2)}>${esc(song2)}</small>` : ''}</span></p>` : '')
       + (chips.length ? `<div class="a-chips">${chips.join('')}</div>` : '') + '</div>'
       + (links.length ? `<div class="a-links${links.length === 1 ? ' one' : ''}">${links.join('')}</div>` : '');
   }
@@ -2322,6 +2425,10 @@ els.sheetBody.addEventListener('click', (e) => {
     state.skip = +val;
     store.set('skip', state.skip);
     renderSkip();
+  } else if (act === 'names') {
+    state.names = val;
+    store.set('names', val);
+    renderQueue();
   }
   refreshSheet();
 });
@@ -2353,6 +2460,10 @@ const genSheet = () => {
   return `<div class="set">
       <div class="set-h"><b>화면 테마</b><small>시스템은 휴대폰의 화면 모드를 따라가요</small></div>
       <div class="seg" role="group" aria-label="화면 테마">${segBtns('theme', Object.entries(THEMES), state.theme)}</div>
+    </div>
+    <div class="set">
+      <div class="set-h"><b>곡·작품 이름</b><small>재생목록·앨범·잠금 화면의 이름이에요. 기본은 파일·폴더 이름 그대로, 한/일은 한국어를 크게 일본어를 작게 보여줘요. 한국어·일본어 이름은 자막 저장소의 트랙명.md에서 가져오고, 없으면 기본 이름을 써요</small></div>
+      <div class="seg" role="group" aria-label="곡·작품 이름">${segBtns('names', Object.entries(NAME_MODES), state.names)}</div>
     </div>
     <div class="sw-row">
       <div class="set-h"><b>하위 폴더도 추가</b><small>폴더를 추가하면 그 안의 폴더에 든 곡도 넣어요. mp3·wav처럼 같은 곡이 든 폴더가 함께 있으면 두 번 들어갈 수 있어요</small></div>
