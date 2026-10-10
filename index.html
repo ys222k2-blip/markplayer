@@ -98,6 +98,7 @@ main{flex:1;min-height:0;position:relative;display:flex;flex-direction:column;ov
 .btn:disabled{opacity:.4}
 .btn.sm{height:32px;padding:0 10px;font-size:13px}
 .btn.wide{width:100%;height:44px;justify-content:center}
+.btn.ghost.warn{color:var(--danger)}
 .selcount{font-size:13.5px;font-weight:600;font-variant-numeric:tabular-nums}
 
 /* queue */
@@ -415,6 +416,7 @@ body.playing .a-song .eq{display:inline-flex}
           <button id="srcLrc" type="button" aria-pressed="true">LRC</button>
           <button id="srcSrt" type="button" aria-pressed="false">SRT</button>
         </div>
+        <button class="btn sm ghost warn" id="vbrBtn" type="button" hidden>VBR 주의</button>
       </div>
     </section>
 
@@ -646,7 +648,7 @@ const els = {
   qBar: $('qBar'), selBar: $('selBar'), selActs: $('selActs'), selStart: $('selStart'), selAll: $('selAll'), selCount: $('selCount'), selDone: $('selDone'), selRemove: $('selRemove'), selKeep: $('selKeep'),
   qScroll: $('qScroll'), qNote: $('qNote'), queue: $('queue'), qEmpty: $('qEmpty'),
   srcLrc: $('srcLrc'), srcSrt: $('srcSrt'), qSubNote: $('qSubNote'),
-  lScroll: $('lScroll'), lWrap: $('lWrap'), lFrame: $('lFrame'), lTop: $('lTop'), lBot: $('lBot'), lNote: $('lNote'), lyrics: $('lyrics'), lEmpty: $('lEmpty'), followBtn: $('followBtn'),
+  lScroll: $('lScroll'), lWrap: $('lWrap'), lFrame: $('lFrame'), lTop: $('lTop'), lBot: $('lBot'), lNote: $('lNote'), lyrics: $('lyrics'), lEmpty: $('lEmpty'), followBtn: $('followBtn'), vbrBtn: $('vbrBtn'),
   toast: $('toast'), toastMsg: $('toastMsg'), toastAct: $('toastAct'),
   nowTitle: $('nowTitle'), nowSub: $('nowSub'), seek: $('seek'), seekTrack: $('seekTrack'), seekFill: $('seekFill'), seekThumb: $('seekThumb'), tCur: $('tCur'), tRem: $('tRem'),
   bPrev: $('bPrev'), bBack: $('bBack'), bPlay: $('bPlay'), playIcon: $('playIcon'), bFwd: $('bFwd'), bNext: $('bNext'),
@@ -1248,7 +1250,7 @@ audio.addEventListener('loadedmetadata', () => {
   if (pendingSeek > 0) { audio.currentTime = Math.min(pendingSeek, Math.max(0, audio.duration - 1)); pendingSeek = 0; }
   renderProgress(); setPos();
 });
-audio.addEventListener('play', () => { renderPlayState(); kick(); syncWake(); });
+audio.addEventListener('play', () => { renderPlayState(); kick(); syncWake(); warnVbr(); });
 audio.addEventListener('pause', () => { renderPlayState(); renderProgress(); syncWake(); saveSession(true); });
 audio.addEventListener('seeked', () => { renderProgress(); tickLyrics(); setPos(); });
 audio.addEventListener('ratechange', setPos);
@@ -1394,6 +1396,7 @@ function rowHTML(it) {
   if (ly.lrc) chips.push('<span class="chip ly">LRC</span>');
   if (ly.srt) chips.push('<span class="chip ly">SRT</span>');
   if (it.bad) chips.push('<span class="chip warn">재생 불가</span>');
+  else if (it.vbr) chips.push('<span class="chip warn" title="가변 비트레이트 MP3: 건너뛰거나 이어 들으면 가사가 밀릴 수 있어요">VBR</span>');
   const lead = state.select
     ? '<span class="check"><svg><use href="#i-check"/></svg></span>'
     : '<svg><use href="#i-grip"/></svg>';
@@ -1608,6 +1611,7 @@ function addFiles(list, opts = {}) {
     if (restore) items = restore.items;
   }
   state.queue.push(...items);
+  items.forEach(checkVbr);
   if (items.length) matchRepo(state.queue);   // against the kept file list; repoAfterAdd checks for a newer one
 
   if (restore && restore.cur) loadItem(restore.cur, { startAt: restore.t });
@@ -1683,6 +1687,60 @@ function takeDrop(dt) {
   })();
 }
 
+/* ---------- VBR MP3 ---------- */
+// A variable-bit-rate MP3 has no fixed number of bytes per second, so on a seek (skipping, resuming, tapping a line)
+// the browser guesses where to read from and what time it is there, and the lyrics run seconds behind or ahead.
+// The first frame tells: a Xing (or VBRI) header is VBR, an Info header CBR; without one, the bit rates of the first frames.
+const MP3_KBPS = [[0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320], [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160]];
+const MP3_HZ = { 3: [44100, 48000, 32000], 2: [22050, 24000, 16000], 0: [11025, 12000, 8000] };
+function mp3Frame(b, i) {   // the Layer III frame header at i: its length, bit rate and side info size
+  if (i + 4 > b.length || b[i] !== 0xFF || (b[i + 1] & 0xE0) !== 0xE0) return null;
+  const ver = (b[i + 1] >> 3) & 3, layer = (b[i + 1] >> 1) & 3, br = b[i + 2] >> 4, sr = (b[i + 2] >> 2) & 3;
+  if (ver === 1 || layer !== 1 || br === 0 || br === 15 || sr === 3) return null;
+  const v1 = ver === 3, kbps = MP3_KBPS[v1 ? 0 : 1][br], mono = (b[i + 3] >> 6) === 3;
+  return { len: Math.floor((v1 ? 144000 : 72000) * kbps / MP3_HZ[ver][sr]) + ((b[i + 2] >> 1) & 1), kbps, side: v1 ? (mono ? 17 : 32) : (mono ? 9 : 17) };
+}
+async function mp3IsVbr(file) {
+  const head = new Uint8Array(await file.slice(0, 10).arrayBuffer());
+  let at = 0;
+  if (head[0] === 0x49 && head[1] === 0x44 && head[2] === 0x33)   // skip an ID3v2 tag (cover art can make it large)
+    at = 10 + ((head[6] & 127) << 21 | (head[7] & 127) << 14 | (head[8] & 127) << 7 | (head[9] & 127)) + (head[5] & 16 ? 10 : 0);
+  const b = new Uint8Array(await file.slice(at, at + 65536).arrayBuffer());
+  let i = 0, f = null;
+  for (; i < b.length - 4; i++) { f = mp3Frame(b, i); if (f && mp3Frame(b, i + f.len)) break; f = null; }   // a sync the next frame follows
+  if (!f) return false;
+  const tag = (o) => String.fromCharCode(...b.subarray(i + o, i + o + 4));
+  if (tag(4 + f.side) === 'Xing' || tag(36) === 'VBRI') return true;
+  if (tag(4 + f.side) === 'Info') return false;
+  const rates = new Set();
+  for (let n = 0; n < 40 && f; n++) { rates.add(f.kbps); i += f.len; f = mp3Frame(b, i); }
+  return rates.size > 1;
+}
+
+// songs are checked one at a time as they are added; a VBR one gets a chip in the list and, with timed lyrics,
+// a warning the first time it plays and a button under the lyrics that repeats it
+const VBR_MSG = '가변 비트레이트(VBR) MP3라 건너뛰거나 이어 들으면 가사가 몇 초씩 밀릴 수 있어요. 처음부터 들으면 맞고, 고정 비트레이트(CBR)로 다시 인코딩하면 어디서든 맞아요';
+let vbrChain = Promise.resolve(), vbrRender = 0;
+function checkVbr(it) {
+  if (it.ext !== 'mp3' || it.vbr !== undefined) return;
+  it.vbr = null;
+  vbrChain = vbrChain.then(() => mp3IsVbr(it.file)).then((v) => {
+    it.vbr = v;
+    if (!v) return;
+    if (!vbrRender) vbrRender = setTimeout(() => { vbrRender = 0; renderQueue(); }, 200);
+    if (it === cur()) { renderVbr(); if (!audio.paused) warnVbr(); }
+  }, () => { it.vbr = false; });
+}
+const vbrLyrics = (c) => !!(c && c.vbr && lyr.data && lyr.data.timed && c.id === lyr.id);
+function renderVbr() { els.vbrBtn.hidden = !vbrLyrics(cur()); }
+function warnVbr(again) {
+  const c = cur();
+  if (!vbrLyrics(c) || (c.vbrWarned && !again)) return;
+  c.vbrWarned = true;
+  toast(VBR_MSG, null, null, 7000);
+}
+els.vbrBtn.addEventListener('click', () => warnVbr(true));
+
 /* ---------- lyrics view ---------- */
 const lyr = { id: null, kind: null, data: null, active: -1, avail: { lrc: null, srt: null }, token: 0 };
 let follow = true, idleTimer = 0, touching = false;
@@ -1691,6 +1749,7 @@ async function loadLyrics() {
   const c = cur();
   const token = ++lyr.token;
   lyr.id = c ? c.id : null; lyr.data = null; lyr.active = -1; lyr.kind = null;
+  renderVbr();
   if (!c) { lyr.avail = { lrc: null, srt: null }; renderLyrBar(); showLyrEmpty('none'); return; }
   const av = findLyrics(c);
   lyr.avail = av;
@@ -1769,6 +1828,8 @@ function renderLyricLines() {
   setFollow(true, true);
   sizeSpacers();
   if (d.timed) tickLyrics(true); else els.lScroll.scrollTop = 0;
+  renderVbr();
+  if (!audio.paused) warnVbr();
 }
 
 const topGap = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--top-gap')) || 36;
@@ -2513,7 +2574,7 @@ function placeToast() {
   if (p) for (const b of p.children) if (b.classList.contains('bar') && !b.hidden) h += b.offsetHeight;
   els.toast.style.bottom = h + 12 + 'px';
 }
-function toast(msg, actLabel, fn) {
+function toast(msg, actLabel, fn, ms) {
   placeToast();
   els.toastMsg.textContent = msg;
   toastFn = fn || null;
@@ -2521,7 +2582,7 @@ function toast(msg, actLabel, fn) {
   if (fn) els.toastAct.textContent = actLabel;
   els.toast.hidden = false;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { els.toast.hidden = true; toastFn = null; }, fn ? 5000 : 2800);
+  toastTimer = setTimeout(() => { els.toast.hidden = true; toastFn = null; }, ms || (fn ? 5000 : 2800));
 }
 els.toastAct.addEventListener('click', () => {
   const f = toastFn;
