@@ -195,6 +195,22 @@ body.dropping #app::after{content:"";position:fixed;inset:8px;z-index:60;border:
 .follow{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:4;height:38px;padding:0 16px 0 12px;border-radius:19px;display:inline-flex;align-items:center;gap:7px;background:var(--accent);color:var(--on-accent);font-size:13.5px;font-weight:700;box-shadow:var(--shadow);white-space:nowrap}
 .follow svg{width:17px;height:17px}
 main:has(.toast:not([hidden])) .follow{bottom:72px}
+/* editing the repository's subtitles (편집): the picked line, its times in 싱크, the editor above the buttons */
+.ln.sel{background:var(--sunk);border-color:var(--line)}   /* not like the box (accent), nor its dashed between-lines look */
+.ln .tm{font-family:var(--font-code);font-size:max(11px,.56em);color:var(--faint);font-variant-numeric:tabular-nums}
+.ln .tm.moved{color:var(--accent);font-weight:700}
+.ednote{flex:none;margin:6px 16px 0}
+.ednote .btn{height:auto;padding:0;vertical-align:baseline}
+.edpanel{flex:none;display:flex;flex-direction:column;gap:8px;margin:6px 16px 0;padding:8px 12px 10px;border:1px solid var(--line);border-radius:14px;background:var(--raise);box-shadow:0 -6px 18px rgba(21,25,37,.08)}
+.ed-head{display:flex;align-items:center;gap:8px;min-width:0;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.ed-head b{flex:none;color:var(--fg)}
+.ed-head .ed-line{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--fg)}
+.ed-head .icon-btn{width:30px;height:30px;margin-left:auto}
+.ed-row{display:flex;align-items:center;gap:6px}
+.ed-row output{flex:1;min-width:0;font-family:var(--font-code);font-size:14px;font-weight:700;font-variant-numeric:tabular-nums}
+.ed-k{flex:none;width:28px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.ed-err{margin:0;font-size:12.5px;color:var(--danger)}
+.edpanel .hint{margin:-2px 0 0}
 
 /* album: the work's cover, its title in full, the song quietly under it, then the ways out */
 .album{width:100%;max-width:440px;margin:0 auto;padding:10px 16px 24px;display:flex;flex-direction:column;gap:16px}
@@ -309,6 +325,7 @@ body.playing .a-song .eq{display:inline-flex}
 .field{display:flex;flex-direction:column;gap:5px;font-size:12.5px;font-weight:600;color:var(--muted)}
 .field input{width:100%;height:44px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg);font:inherit;font-size:16px;font-weight:400}
 .field input::placeholder{color:var(--faint)}
+.field textarea{width:100%;min-height:42px;max-height:7.6em;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg);font:inherit;font-size:16px;font-weight:400;line-height:1.4;resize:none;overflow-y:auto}
 .btnrow{display:flex;flex-wrap:wrap;gap:8px}
 .opt.nav{min-height:52px;margin:0 -10px}
 .opt .chev{width:18px;height:18px;flex:none;color:var(--faint)}
@@ -350,7 +367,8 @@ body.playing .a-song .eq{display:inline-flex}
     <symbol id="i-disc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/></symbol>
     <symbol id="i-quote" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8M8 13h5"/></symbol>
     <symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></symbol>
-    <symbol id="i-locate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
+    <symbol id="i-locate"viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></symbol>
   </defs>
 </svg>
 
@@ -411,12 +429,27 @@ body.playing .a-song .eq{display:inline-flex}
         <button class="follow" id="followBtn" type="button" hidden><svg><use href="#i-locate"/></svg>현재 가사로</button>
       </div>
       <div class="empty fade-top gap-top" id="lEmpty" hidden></div>
-      <div class="bar">
+      <p class="note ednote" id="edNote" hidden></p>
+      <div class="edpanel" id="edPanel" hidden></div>
+      <div class="bar" id="lBar">
         <div class="seg" role="group" aria-label="가사 종류">
           <button id="srcLrc" type="button" aria-pressed="true">LRC</button>
           <button id="srcSrt" type="button" aria-pressed="false">SRT</button>
         </div>
+        <button class="btn sm" id="editBtn" type="button" hidden><svg><use href="#i-edit"/></svg>편집</button>
         <button class="btn sm ghost warn" id="vbrBtn" type="button" hidden>VBR 주의</button>
+      </div>
+      <div class="bar" id="edBar" hidden>
+        <div class="seg" role="group" aria-label="고칠 것">
+          <button id="edText" type="button">문장</button>
+          <button id="edSync" type="button">싱크</button>
+        </div>
+        <div class="seg" id="edBase" role="group" aria-label="싱크 볼 자막" hidden>
+          <button id="edBaseJa" type="button">일본어</button>
+          <button id="edBaseKo" type="button">한국어</button>
+        </div>
+        <span class="spacer"></span>
+        <button class="btn sm primary" id="edDone" type="button">완료</button>
       </div>
     </section>
 
@@ -649,6 +682,7 @@ const els = {
   qScroll: $('qScroll'), qNote: $('qNote'), queue: $('queue'), qEmpty: $('qEmpty'),
   srcLrc: $('srcLrc'), srcSrt: $('srcSrt'), qSubNote: $('qSubNote'),
   lScroll: $('lScroll'), lWrap: $('lWrap'), lFrame: $('lFrame'), lTop: $('lTop'), lBot: $('lBot'), lNote: $('lNote'), lyrics: $('lyrics'), lEmpty: $('lEmpty'), followBtn: $('followBtn'), vbrBtn: $('vbrBtn'),
+  lBar: $('lBar'), editBtn: $('editBtn'), edBar: $('edBar'), edText: $('edText'), edSync: $('edSync'), edBase: $('edBase'), edBaseJa: $('edBaseJa'), edBaseKo: $('edBaseKo'), edDone: $('edDone'), edPanel: $('edPanel'), edNote: $('edNote'),
   toast: $('toast'), toastMsg: $('toastMsg'), toastAct: $('toastAct'),
   nowTitle: $('nowTitle'), nowSub: $('nowSub'), seek: $('seek'), seekTrack: $('seekTrack'), seekFill: $('seekFill'), seekThumb: $('seekThumb'), tCur: $('tCur'), tRem: $('tRem'),
   bPrev: $('bPrev'), bBack: $('bBack'), bPlay: $('bPlay'), playIcon: $('playIcon'), bFwd: $('bFwd'), bNext: $('bNext'),
@@ -716,8 +750,9 @@ function getText(src) {
 
 /* ---------- subtitle repository ----------
    Subtitles kept in a private GitHub repository (subtitles/<RJ code_title>/<track>.lrc · .ko.srt · .ja.srt),
-   read with a read-only token entered once in the settings. The file list comes from one tree request and is kept;
-   a matched song's files are fetched right after the song is added and kept by blob sha, so they also work offline. */
+   read with a token entered once in the settings (read-only does; 편집 in the lyrics tab needs it to write).
+   The file list comes from one tree request and is kept; a matched song's files are fetched right after the song
+   is added and kept by blob sha, so they also work offline. */
 const repo = {
   cfg: Object.assign({ name: '', token: '', branch: '', on: true }, store.get('repo', null) || {}),
   picks: store.get('repoPick', {}) || {},   // RJ code (or local folder) -> repository folder, when several fit
@@ -761,18 +796,29 @@ const kv = idbKV('mark-subs');
 const rp = (name = repo.cfg.name) => '/repos/' + name.split('/').map(encodeURIComponent).join('/');
 const urlPath = (s) => s.split('/').map(encodeURIComponent).join('/');
 const repoFolderUrl = (dir) => `https://github.com/${urlPath(repo.cfg.name)}/tree/${urlPath(repo.cfg.branch || 'HEAD')}/${urlPath(dir)}`;
-async function gh(path, token) {
+// opts.method + opts.body: a write (JSON); opts.missing: a 404 gives null instead of an error
+async function gh(path, token, opts = {}) {
+  const init = { headers: { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + token }, cache: 'no-store' };
+  if (opts.method) { init.method = opts.method; init.headers['Content-Type'] = 'application/json'; init.body = JSON.stringify(opts.body); }
   let r;
   try {
-    r = await fetch('https://api.github.com' + path, { headers: { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + token }, cache: 'no-store' });
+    r = await fetch('https://api.github.com' + path, init);
   } catch (e) { throw new Error('GitHub에 연결하지 못했어요. 인터넷 연결을 확인하세요'); }
   if (r.ok) return r.json();
-  const s = r.status, limited = s === 429 || (s === 403 && r.headers.get('x-ratelimit-remaining') === '0');
-  throw new Error(s === 401 ? '토큰이 맞지 않거나 만료됐어요'
+  const s = r.status;
+  if (s === 404 && opts.missing) return null;
+  let said = '';
+  try { said = String((await r.json()).message || ''); } catch (e) { /* no body */ }
+  // a write too soon after others (the secondary limit) is a 403 too, not a missing permission
+  const limited = s === 429 || (s === 403 && (r.headers.get('x-ratelimit-remaining') === '0' || !!r.headers.get('retry-after') || /rate limit/i.test(said)));
+  const err = new Error(s === 401 ? '토큰이 맞지 않거나 만료됐어요'
     : s === 404 ? '저장소를 찾지 못했어요. 이름과, 토큰에 이 저장소를 골라 두었는지 확인하세요'
     : limited ? 'GitHub 요청 한도를 넘었어요. 잠시 뒤에 다시 해 보세요'
+    : s === 403 && opts.method ? '토큰에 쓰기 권한이 없어요. 설정 › 가사 › 자막 저장소에서 Contents: Read and write 토큰으로 다시 연결하세요'
     : s === 403 ? '토큰에 이 저장소의 Contents 읽기 권한이 없어요'
     : `GitHub 오류(${s})`);
+  err.status = s;
+  throw err;
 }
 
 // NFKC + lower case, so a name typed on a Mac (NFD kana), full-width ～？ and case all compare equal
@@ -804,7 +850,7 @@ function buildRepoIndex(files) {
     const key = normKey(base);
     let tr = w.tracks.get(key);
     if (!tr) { tr = { name: base, lrc: null, srt: null, ja: null }; w.tracks.set(key, tr); }
-    const f = { sha, ext: p.ext };
+    const f = { sha, ext: p.ext, path };
     if (lang === 'ja') { if (!tr.ja || p.ext !== 'lrc') tr.ja = f; }
     else if (p.ext === 'lrc') tr.lrc = f;
     else if (!tr.srt || lang === 'ko') tr.srt = f;
@@ -872,7 +918,7 @@ function repoRematch() {
   const c = cur(), before = repoSig(c);
   matchRepo(state.queue);
   renderQueue();
-  if (repoSig(c) !== before) loadLyrics();
+  if (repoSig(c) !== before) loadLyrics(); else renderLyrBar();
   paintRepoStatus();
 }
 
@@ -883,6 +929,12 @@ function repoSrc(f) {
   return s;
 }
 
+function b64Text(b64) {
+  const bin = atob(String(b64 || '').replace(/\s+/g, ''));
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return readText(new Blob([bytes]));
+}
 function repoText(sha) {
   let p = blobJobs.get(sha);
   if (p) return p;
@@ -891,10 +943,7 @@ function repoText(sha) {
     if (typeof hit === 'string') return hit;
     if (!repo.cfg.token) throw new Error('자막 저장소가 연결되어 있지 않아요');
     const j = await gh(`${rp()}/git/blobs/${sha}`, repo.cfg.token);
-    const bin = atob(String(j.content || '').replace(/\s+/g, ''));
-    const bytes = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-    const text = await readText(new Blob([bytes]));
+    const text = await b64Text(j.content);
     await kv.set('b:' + sha, text);
     return text;
   })();
@@ -1115,6 +1164,7 @@ function loadItem(it, opts = {}) {
   audio.playbackRate = state.rate;
   pendingSeek = opts.startAt || 0;
   autoAdvance = !!opts.auto;
+  ed.range = null;
   if (opts.autoplay) doPlay();
   onTrackChanged();
 }
@@ -1254,7 +1304,7 @@ audio.addEventListener('play', () => { renderPlayState(); kick(); syncWake(); wa
 audio.addEventListener('pause', () => { renderPlayState(); renderProgress(); syncWake(); saveSession(true); });
 audio.addEventListener('seeked', () => { renderProgress(); tickLyrics(); setPos(); });
 audio.addEventListener('ratechange', setPos);
-audio.addEventListener('timeupdate', () => { renderProgress(); tickLyrics(); checkSleep(); saveSession(false); });
+audio.addEventListener('timeupdate', () => { renderProgress(); tickLyrics(); checkRange(); checkSleep(); saveSession(false); });
 
 /* ---------- loop for smooth progress + lyrics while visible ---------- */
 let raf = 0;
@@ -1262,6 +1312,7 @@ function frame() {
   raf = 0;
   renderProgress();
   tickLyrics();
+  checkRange();
   if (!audio.paused && document.visibilityState === 'visible') raf = requestAnimationFrame(frame);
 }
 function kick() { if (!raf) raf = requestAnimationFrame(frame); }
@@ -1744,8 +1795,15 @@ els.vbrBtn.addEventListener('click', () => warnVbr(true));
 /* ---------- lyrics view ---------- */
 const lyr = { id: null, kind: null, data: null, active: -1, avail: { lrc: null, srt: null }, token: 0 };
 let follow = true, idleTimer = 0, touching = false;
+// 편집: on, 문장 ('text') or 싱크 ('sync'), the language 싱크 shows first; the song (it), its track (t), the picked line,
+// the times 싱크 is trying on it (draft), a save under way (busy), and a line being played to its end (range)
+const ed = {
+  on: false, mode: store.get('edMode', 'text') === 'sync' ? 'sync' : 'text', base: store.get('edBase', 'ja') === 'ko' ? 'ko' : 'ja',
+  it: null, t: null, sel: -1, draft: null, busy: false, range: null,
+};
 
 async function loadLyrics() {
+  if (ed.on) { loadEdit(); return; }
   const c = cur();
   const token = ++lyr.token;
   lyr.id = c ? c.id : null; lyr.data = null; lyr.active = -1; lyr.kind = null;
@@ -1792,6 +1850,8 @@ function renderLyrBar() {
   els.srcSrt.classList.toggle('on', lyr.kind === 'srt');
   els.srcLrc.setAttribute('aria-pressed', String(lyr.kind === 'lrc'));
   els.srcSrt.setAttribute('aria-pressed', String(lyr.kind === 'srt'));
+  els.editBtn.hidden = !repo.cfg.token;
+  els.editBtn.disabled = !editTarget(cur());
 }
 
 function showLyrEmpty(kind, c) {
@@ -1818,7 +1878,7 @@ function renderLyricLines() {
   els.lWrap.hidden = false;
   els.lScroll.classList.toggle('untimed', !d.timed);
   els.lNote.hidden = d.timed;
-  els.lyrics.innerHTML = d.groups.map((g, i) => {
+  els.lyrics.innerHTML = ed.on ? ed.t.cues.map(editLineHTML).join('') : d.groups.map((g, i) => {
     const [main, ...subs] = g.lines;
     const head = main ? `<span class="main">${esc(main)}</span>` : '<span class="main rest" aria-label="간주">♪ ♪</span>';
     const ja = (g.ja || []).map((s) => `<span class="sub" lang="ja">${esc(s)}</span>`).join('');
@@ -1907,6 +1967,7 @@ els.followBtn.addEventListener('click', () => setFollow(true));
 els.lyrics.addEventListener('click', (e) => {
   const li = e.target.closest('.ln');
   if (!li || !lyr.data || !lyr.data.timed) return;
+  if (ed.on) { pickLine(+li.dataset.i); return; }
   const g = lyr.data.groups[+li.dataset.i];
   if (!g || !cur()) return;
   audio.currentTime = Math.max(0, g.t + offsetOf(cur()));
@@ -1918,6 +1979,545 @@ els.lyrics.addEventListener('click', (e) => {
 
 els.srcLrc.addEventListener('click', () => { state.lyricSrc = 'lrc'; store.set('lyricSrc', 'lrc'); loadLyrics(); });
 els.srcSrt.addEventListener('click', () => { state.lyricSrc = 'srt'; store.set('lyricSrc', 'srt'); loadLyrics(); });
+
+/* ---------- editing the repository's subtitles (편집) ----------
+   Next to LRC · SRT when the song's subtitles come from the repository. Two ways, one at a time:
+   문장 fixes a line's words: Korean in .ko.srt, .ko.txt and .lrc together, Japanese in .ja.srt.
+   싱크 fixes a line's times, which .ja.srt and .ko.srt always share (.lrc has the start), so it shows either language
+   first and writes both; a neighbor the line would overlap moves with it.
+   Every save is one commit straight onto the default branch: the track's files are read at the branch head, checked
+   as the repository's own checker does (subs.py check) and against what the edit was made on, changed on those lines
+   only, and committed together. The repository's Action then rebuilds the work's zip and cover. */
+const SRT_TIME = /^(\d{2}):(\d{2}):(\d{2}),(\d{3}) --> (\d{2}):(\d{2}):(\d{2}),(\d{3})$/;   // as the repository's tools write them
+const LRC_LINE = /^\[(\d{2,3}):(\d{2})\.(\d{2})\](.+)$/, LRC_TAG = /^\[[a-z]+:.*\]$/;
+const MIN_LEN = 100;    // ms: no line gets shorter
+const NOW_LEAD = 300;   // ms: 지금 for a start takes this off, for the tap coming after the voice (and the build's own 0.1 s lead)
+const SYNC_VBR = 'VBR MP3는 재생 위치가 어긋날 수 있어서 싱크를 고칠 수 없어요. 고정 비트레이트(CBR) 파일로 들을 때 고쳐 주세요';
+const EDIT_INPUT = 'autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"';
+const pad2 = (n, k = 2) => String(n).padStart(k, '0');
+const msOf = (h, m, s, x) => ((+h * 60 + +m) * 60 + +s) * 1000 + +x;
+const srtStamp = (ms) => `${pad2(Math.floor(ms / 3600000))}:${pad2(Math.floor(ms / 60000) % 60)}:${pad2(Math.floor(ms / 1000) % 60)},${pad2(ms % 1000, 3)}`;
+// centiseconds, a half going to the even one as the tools' Python round() does
+function lrcStamp(ms) {
+  let cs = Math.floor(ms / 10);
+  if (ms % 10 > 5 || (ms % 10 === 5 && cs % 2)) cs++;
+  return `[${pad2(Math.floor(cs / 6000))}:${pad2(Math.floor(cs / 100) % 60)}.${pad2(cs % 100)}]`;
+}
+const msText = (ms) => {   // 10:34.120
+  const h = Math.floor(ms / 3600000), m = Math.floor(ms / 60000) % 60;
+  return `${h ? h + ':' + pad2(m) : m}:${pad2(Math.floor(ms / 1000) % 60)}.${pad2(ms % 1000, 3)}`;
+};
+const cleanLine = (s) => String(s).replace(/[\r\n\t]+/g, ' ').trim();
+
+// a file as its lines and where each subtitle sits in them, so a change touches those lines and nothing else
+const eolOf = (text) => (text.includes('\r\n') ? '\r\n' : '\n');
+const docText = (d) => d.lines.join(d.eol);
+function srtDoc(text) {
+  const lines = text.split(/\r?\n/), cues = [];
+  for (let i = 0; i < lines.length; i++) {
+    const m = SRT_TIME.exec(lines[i].trim());
+    if (!m) continue;
+    let j = i + 1;
+    while (j < lines.length && lines[j].trim()) j++;
+    cues.push({ at: i, a: i + 1, b: j, s: msOf(m[1], m[2], m[3], m[4]), e: msOf(m[5], m[6], m[7], m[8]), text: lines.slice(i + 1, j).map((x) => x.trim()).join(' ') });
+    i = j;
+  }
+  return { lines, eol: eolOf(text), cues };
+}
+function lrcDoc(text) {
+  const lines = text.split(/\r?\n/), rows = [];
+  lines.forEach((l, i) => {
+    if (!l.trim() || LRC_TAG.test(l.trim())) return;
+    const m = LRC_LINE.exec(l);
+    rows.push(m ? { at: i, ms: (+m[1] * 60 + +m[2]) * 1000 + +m[3] * 10, text: m[4] } : { at: i, bad: true });
+  });
+  return { lines, eol: eolOf(text), rows };
+}
+function txtDoc(text) {
+  const lines = text.split(/\r?\n/);
+  let n = lines.length;
+  while (n && !lines[n - 1].trim()) n--;
+  return { lines, eol: eolOf(text), rows: lines.slice(0, n).map((l, i) => ({ at: i, text: l.trim() })) };
+}
+const DOC = { ko: srtDoc, ja: srtDoc, lrc: lrcDoc, txt: txtDoc };
+const reparse = (d) => { const out = {}; for (const k in d) out[k] = DOC[k](docText(d[k])); return out; };
+// what the repository's checker would say about the track ('' when it passes): the two .srt line by line with the
+// same times, no line empty, short or overlapping the next, .ko.txt and .lrc saying what .ko.srt says
+function trackProblem(d) {
+  const ko = d.ko.cues, ja = d.ja.cues;
+  if (ko.length !== ja.length) return `줄 수가 일본어 ${ja.length}, 한국어 ${ko.length}로 달라요`;
+  for (let i = 0; i < ja.length; i++) {
+    if (Math.abs(ja[i].s - ko[i].s) > 1 || Math.abs(ja[i].e - ko[i].e) > 1) return `${i + 1}번 시각이 일본어·한국어에서 달라요`;
+    if (ja[i].e <= ja[i].s) return `${i + 1}번 길이가 0 이하예요`;
+    if (!ja[i].text) return `${i + 1}번 일본어가 비었어요`;
+    if (i + 1 < ja.length && ja[i].e > ja[i + 1].s) return `${i + 1}번과 ${i + 2}번이 겹쳐요`;
+  }
+  if (d.txt && (d.txt.rows.length !== ko.length || d.txt.rows.some((r, i) => r.text !== ko[i].text))) return 'ko.txt가 ko.srt와 달라요';
+  if (d.lrc) {
+    if (d.lrc.rows.length !== ko.length) return `lrc 줄 수가 ${d.lrc.rows.length}로 달라요`;
+    const k = d.lrc.rows.findIndex((r, i) => r.bad || Math.abs(r.ms - ko[i].s) > 11 || r.text !== ko[i].text);
+    if (k >= 0) return `lrc ${k + 1}행이 ko.srt와 달라요`;
+  }
+  return '';
+}
+function setSrtText(d, i, text) {
+  const c = d.cues[i];
+  d.lines.splice(c.a, c.b - c.a, text);
+  Object.assign(d, srtDoc(docText(d)));
+}
+const setSrtTime = (d, i, s, e) => { d.lines[d.cues[i].at] = `${srtStamp(s)} --> ${srtStamp(e)}`; };
+// s: a new start (null keeps the stamp as written); text: new words (null keeps them)
+function setLrc(d, i, s, text) {
+  const r = d.rows[i], line = d.lines[r.at];
+  d.lines[r.at] = (s == null ? line.slice(0, line.indexOf(']') + 1) : lrcStamp(s)) + (text == null ? r.text : text);
+}
+const setTxt = (d, i, text) => { d.lines[d.rows[i].at] = text; };
+const cuesOf = (d) => d.ko.cues.map((c, i) => ({ s: c.s, e: c.e, ko: c.text, ja: d.ja.cues[i].text }));
+
+// the song's subtitles in the repository when they can be edited: a .ko.srt and a .ja.srt (.lrc, .ko.txt follow when there)
+function editTarget(c) {
+  const r = c && c.repo && repoReady() ? c.repo : null;
+  return r && r.srt && r.ja && /\.ko\.srt$/i.test(r.srt.path || '') && /\.ja\.srt$/i.test(r.ja.path || '') ? r : null;
+}
+const editSig = (r) => (r ? [r.srt.sha, r.ja.sha, r.lrc ? r.lrc.sha : ''].join() : '');
+function trackPaths(r) {
+  const base = r.srt.path.slice(0, -'.ko.srt'.length);
+  return { ko: r.srt.path, ja: r.ja.path, lrc: r.lrc ? r.lrc.path : base + '.lrc', txt: base + '.ko.txt' };
+}
+
+function startEdit() {
+  if (!editTarget(cur())) return;
+  Object.assign(ed, { on: true, it: null, t: null, sel: -1, draft: null, painted: null });
+  renderEdit();
+  loadEdit();
+}
+function endEdit(msg) {
+  Object.assign(ed, { on: false, it: null, t: null, sel: -1, draft: null, painted: null, range: null });
+  renderEdit();
+  if (msg) toast(msg, null, null, 6000);
+  loadLyrics();
+}
+// the current song's track from the kept files, checked before anything can be changed
+async function loadEdit() {
+  const c = cur(), r = editTarget(c), token = ++lyr.token;
+  lyr.id = c ? c.id : null; lyr.data = null; lyr.active = -1; lyr.kind = 'srt';
+  renderVbr();
+  if (!r) { endEdit(c ? '이 곡은 저장소 자막이 없어서 편집을 마쳤어요' : ''); return; }
+  if (!(ed.t && ed.it === c && ed.t.sig === editSig(r))) {
+    let texts;
+    try { texts = await Promise.all([r.srt, r.ja, r.lrc].map((f) => (f ? repoText(f.sha) : null))); }
+    catch (e) { if (token === lyr.token) endEdit('저장소 자막을 받지 못해서 편집을 마쳤어요'); return; }
+    if (token !== lyr.token) return;
+    const d = { ko: srtDoc(texts[0]), ja: srtDoc(texts[1]) };
+    if (texts[2] != null) d.lrc = lrcDoc(texts[2]);
+    const bad = trackProblem(d);
+    if (bad) { endEdit(`이 곡의 자막 파일이 서로 맞지 않아서 고칠 수 없어요(${bad})`); return; }
+    Object.assign(ed, { it: c, t: { sig: editSig(r), paths: trackPaths(r), cues: cuesOf(d) }, sel: -1, draft: null });
+  }
+  if (ed.mode === 'sync' && c.vbr) { ed.mode = 'text'; toast(SYNC_VBR, null, null, 7000); }
+  showEdit();
+}
+function showEdit() {
+  const c = cur();
+  lyr.id = c.id; lyr.kind = 'srt'; lyr.avail = findLyrics(c);
+  lyr.data = { timed: true, groups: ed.t.cues.map((x) => ({ t: x.s / 1000, end: x.e / 1000, lines: [x.ko] })) };
+  renderLyricLines();
+  ed.painted = null;
+  if (ed.draft) paintDraft();
+  renderEdit();
+}
+// 문장: Korean, the Japanese under it. 싱크: the language picked first, and the times
+function editLineHTML(x, i) {
+  const sync = ed.mode === 'sync', jaFirst = sync && ed.base === 'ja';
+  const ko = `<span class="${jaFirst ? 'sub' : 'main'}">${esc(x.ko)}</span>`, ja = `<span class="${jaFirst ? 'main' : 'sub'}" lang="ja">${esc(x.ja)}</span>`;
+  return `<li class="ln${i === ed.sel ? ' sel' : ''}" data-i="${i}">${jaFirst ? ja + ko : ko + ja}${sync ? `<span class="tm">${msText(x.s)} → ${msText(x.e)}</span>` : ''}</li>`;
+}
+// the lyrics view got shorter or taller (the editor came or went): keep the box and the current line in the middle
+function relayoutLyrics() {
+  requestAnimationFrame(() => { sizeSpacers(); placeFrame(els.lFrame.classList.contains('gap')); if (follow) scrollToActive(true); });
+}
+function renderEdit() {
+  els.lBar.hidden = ed.on;
+  els.edBar.hidden = !ed.on;
+  els.edNote.hidden = true;
+  if (ed.on) {
+    const sync = ed.mode === 'sync', off = offsetOf(cur());
+    for (const [b, on] of [[els.edText, !sync], [els.edSync, sync], [els.edBaseJa, ed.base === 'ja'], [els.edBaseKo, ed.base === 'ko']]) {
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', String(on));
+    }
+    els.edBase.hidden = !sync;
+    if (sync && off && ed.t) {
+      els.edNote.innerHTML = `가사 싱크 조절 ${offText(off)}가 걸린 곡이에요. 고친 시각은 조절 값을 뺀 채로 저장돼요. <button class="btn ghost sm" type="button" data-ed="shift">모든 줄에 반영</button>`;
+      els.edNote.hidden = false;
+    }
+  }
+  renderEditPanel();
+  relayoutLyrics();
+  if (!els.toast.hidden) placeToast();
+}
+function renderEditPanel() {
+  const i = ed.sel, x = ed.on && ed.t ? ed.t.cues[i] : null, p = els.edPanel;
+  p.hidden = !x;
+  if (!x) { p.innerHTML = ''; p.dataset.key = ''; return; }
+  const key = ed.mode + ':' + i, close = '<button class="icon-btn" type="button" data-ed="close" aria-label="닫기"><svg><use href="#i-x"/></svg></button>';
+  if (ed.mode === 'text') {
+    if (p.dataset.key === key) return;   // keep what is being typed
+    p.innerHTML = `<div class="ed-head"><b>${i + 1}번</b><span>${msText(x.s)}</span>${close}</div>
+      <label class="field">일본어<textarea id="edJa" rows="1" lang="ja" ${EDIT_INPUT}>${esc(x.ja)}</textarea></label>
+      <label class="field">한국어<textarea id="edKo" rows="1" ${EDIT_INPUT}>${esc(x.ko)}</textarea></label>
+      <p class="ed-err" id="edErr" hidden></p>
+      <div class="ed-row"><button class="btn sm" type="button" data-ed="play"><svg><use href="#i-play"/></svg>이 줄 듣기</button><span class="spacer"></span><button class="btn sm primary" type="button" data-ed="save">저장</button></div>`;
+    for (const t of p.querySelectorAll('textarea')) fitArea(t);
+    if (window.matchMedia && matchMedia('(pointer: fine)').matches) $('edKo').focus({ preventScroll: true });
+  } else {
+    const d = ed.draft, ch = draftChanges(), line = ed.base === 'ja' ? x.ja : x.ko;
+    const row = (k, label, v) => `<div class="ed-row"><span class="ed-k">${label}</span><output>${msText(v)}</output>`
+      + `<button class="btn sm" type="button" data-ed="${k}:-100">−0.1</button><button class="btn sm" type="button" data-ed="${k}:100">+0.1</button>`
+      + `<button class="btn sm" type="button" data-ed="${k}:now">지금</button></div>`;
+    const nb = ch.filter((c) => c.i !== i).map((c) => (c.i < i
+      ? `앞 줄 끝도 ${msText(c.from.e)} → ${msText(c.to.e)}` : `뒤 줄 시작도 ${msText(c.from.s)} → ${msText(c.to.s)}`));
+    p.innerHTML = `<div class="ed-head"><b>${i + 1}번</b><span class="ed-line"${ed.base === 'ja' ? ' lang="ja"' : ''}>${esc(line)}</span>${close}</div>
+      ${row('s', '시작', d.s)}${row('e', '끝', d.e)}${nb.map((s) => `<p class="hint">${s}</p>`).join('')}
+      <p class="ed-err" id="edErr" hidden></p>
+      <div class="ed-row"><button class="btn sm" type="button" data-ed="play"><svg><use href="#i-play"/></svg>들어 보기</button><span class="spacer"></span>`
+      + `${ch.length ? '<button class="btn sm ghost" type="button" data-ed="reset">처음대로</button>' : ''}`
+      + `<button class="btn sm primary" type="button" data-ed="save"${ch.length ? '' : ' data-none'}>저장</button></div>`;
+  }
+  p.dataset.key = key;
+  paintBusy();
+}
+function fitArea(t) { t.style.height = 'auto'; t.style.height = t.scrollHeight + 2 + 'px'; }
+function showErr(msg) {
+  const el = $('edErr');
+  if (el && !els.edPanel.hidden) { el.textContent = msg; el.hidden = false; } else toast(msg, null, null, 7000);
+}
+function paintBusy() {
+  for (const el of els.edPanel.querySelectorAll('button, textarea')) {
+    if (el.tagName === 'TEXTAREA') el.readOnly = ed.busy;
+    else if (el.dataset.ed !== 'play' && el.dataset.ed !== 'close') el.disabled = ed.busy || el.hasAttribute('data-none');
+  }
+  const save = els.edPanel.querySelector('[data-ed="save"]');
+  if (save) save.textContent = ed.busy ? '저장 중…' : '저장';
+  for (const el of els.edNote.querySelectorAll('button')) el.disabled = ed.busy;
+}
+
+function editDirty() {
+  const x = ed.t && ed.t.cues[ed.sel];
+  if (!x) return false;
+  if (ed.mode === 'sync') return !!(ed.draft && (ed.draft.s !== x.s || ed.draft.e !== x.e));
+  const ko = $('edKo'), ja = $('edJa');
+  return !!(ko && ja && (cleanLine(ko.value) !== x.ko || cleanLine(ja.value) !== x.ja));
+}
+function pickLine(i) {
+  if (!ed.t || !ed.t.cues[i] || i === ed.sel) return;
+  if (ed.busy) { toast('저장하는 중이에요'); return; }
+  if (editDirty()) { toast('고치던 줄을 먼저 저장하거나 닫아 주세요'); return; }
+  setSel(i);
+}
+function setSel(i) {
+  const kids = els.lyrics.children;
+  if (ed.sel >= 0 && kids[ed.sel]) kids[ed.sel].classList.remove('sel');
+  ed.sel = i;
+  if (i >= 0 && kids[i]) kids[i].classList.add('sel');
+  const x = i >= 0 ? ed.t.cues[i] : null;
+  ed.draft = ed.mode === 'sync' && x ? { s: x.s, e: x.e } : null;
+  paintDraft();
+  renderEditPanel();
+  relayoutLyrics();
+  if (!els.toast.hidden) placeToast();
+}
+function setEditMode(m) {
+  if (m === ed.mode || ed.busy) return;
+  if (editDirty()) { toast('고치던 줄을 먼저 저장하거나 닫아 주세요'); return; }
+  const c = cur();
+  if (m === 'sync' && c && c.vbr) { toast(SYNC_VBR, null, null, 7000); return; }
+  ed.mode = m;
+  store.set('edMode', m);
+  Object.assign(ed, { sel: -1, draft: null, painted: null });
+  if (ed.t) showEdit(); else renderEdit();
+}
+function setEditBase(b) {
+  if (b === ed.base) return;
+  ed.base = b;
+  store.set('edBase', b);
+  if (ed.t) showEdit();
+}
+
+// 싱크: the lines a draft changes, each { i, from, to } — the picked one, and a neighbor it would overlap
+function draftChanges() {
+  const i = ed.sel, cs = ed.t ? ed.t.cues : [], x = cs[i], d = ed.draft, out = [];
+  if (!x || !d) return out;
+  const prev = cs[i - 1], next = cs[i + 1];
+  if (prev && d.s < prev.e) out.push({ i: i - 1, from: { s: prev.s, e: prev.e }, to: { s: prev.s, e: d.s } });
+  if (d.s !== x.s || d.e !== x.e) out.push({ i, from: { s: x.s, e: x.e }, to: { s: d.s, e: d.e } });
+  if (next && d.e > next.s) out.push({ i: i + 1, from: { s: next.s, e: next.e }, to: { s: d.e, e: next.e } });
+  return out;
+}
+// shows the times being tried: on the lines' time labels, and the lyrics follow them while playing
+function paintDraft() {
+  const g = lyr.data && lyr.data.groups, kids = els.lyrics.children;
+  if (!g || !ed.t) return;
+  const ch = ed.draft ? draftChanges() : [], seen = new Set();
+  for (const k of (ed.painted || []).concat(ch.map((c) => c.i))) {
+    if (seen.has(k) || !g[k]) continue;
+    seen.add(k);
+    const c = ch.find((y) => y.i === k), x = c ? c.to : ed.t.cues[k];
+    g[k].t = x.s / 1000;
+    g[k].end = x.e / 1000;
+    const tm = kids[k] && kids[k].querySelector('.tm');
+    if (tm) { tm.textContent = `${msText(x.s)} → ${msText(x.e)}`; tm.classList.toggle('moved', !!c); }
+  }
+  ed.painted = ch.map((c) => c.i);
+  tickLyrics();
+}
+// a line keeps its place between its neighbors and every line at least MIN_LEN long
+function fitDraft(s, e) {
+  const cs = ed.t.cues, prev = cs[ed.sel - 1], next = cs[ed.sel + 1];
+  if (s < (prev ? prev.s + MIN_LEN : 0) || (next && e > next.e - MIN_LEN) || e - s < MIN_LEN) return false;
+  ed.draft = { s, e };
+  return true;
+}
+// k: 's' (start) or 'e' (end); v: ms to move by, or 'now' for where the song is
+function nudge(k, v) {
+  const d = ed.draft, c = cur();
+  if (!d || !c) return;
+  let t;
+  if (v === 'now') {
+    if (c.vbr) { showErr(SYNC_VBR); return; }
+    t = Math.round((audio.currentTime - offsetOf(c)) * 100) * 10 - (k === 's' ? NOW_LEAD : 0);
+  } else t = (k === 's' ? d.s : d.e) + +v;
+  const len = d.e - d.s;
+  let s = d.s, e = d.e;
+  if (k === 's') { s = Math.max(0, t); if (e - s < MIN_LEN) e = s + len; }   // past its own end: the whole line moves
+  else { e = t; if (e - s < MIN_LEN) s = Math.max(0, e - len); }
+  if (!fitDraft(s, e)) { showErr('앞뒤 줄을 넘어서 옮길 수는 없어요'); return; }
+  paintDraft();
+  renderEditPanel();
+}
+
+// plays from a to b (the file's times), then pauses; a pause or a seek away drops it
+function playRange(a, b) {
+  const c = cur();
+  if (!c) return;
+  const off = offsetOf(c), from = Math.max(0, a + off);
+  if (audio.duration > 0) audio.currentTime = Math.min(from, audio.duration); else pendingSeek = from;
+  ed.range = { a: from, b: b + off };
+  doPlay();
+}
+function checkRange() {
+  const r = ed.range;
+  if (!r) return;
+  const t = audio.currentTime;
+  if (t < r.a - 1 || t >= r.b) { ed.range = null; if (t >= r.b && t < r.b + 1) audio.pause(); }
+}
+audio.addEventListener('pause', () => { ed.range = null; });
+function playLine() {
+  const x = ed.t && ed.t.cues[ed.sel];
+  if (!x) return;
+  const sync = ed.mode === 'sync' && ed.draft, d = sync ? ed.draft : x;
+  playRange(d.s / 1000 - (sync ? 1 : 0.5), d.e / 1000 + 0.3);
+}
+
+/* The saves. A job knows its song, the track's paths, the commit message, how to check the files at the branch head
+   still say what the edit was made on (check), how to change them (change), and its reverse (undo). */
+const workTrack = (it) => `${it.repo.name} ${it.repo.track}`;
+// 문장: line i's words, from old ({ s, ko, ja }) to now ({ ko, ja })
+function textJob(it, paths, i, old, now, undone) {
+  const said = [];
+  if (now.ko !== old.ko) said.push(`한국어: ${old.ko} → ${now.ko}`);
+  if (now.ja !== old.ja) said.push(`일본어: ${old.ja} → ${now.ja}`);
+  return {
+    it, paths,
+    message: `자막 문장 수정: ${workTrack(it)} ${lrcStamp(old.s).slice(1, -1)}${undone ? ' (되돌리기)' : ''}\n\n${i + 1}번\n${said.join('\n')}`,
+    check: (d) => { const k = d.ko.cues[i], j = d.ja.cues[i]; return !!(k && j && Math.abs(k.s - old.s) <= 1 && k.text === old.ko && j.text === old.ja); },
+    change: (d) => {
+      if (now.ko !== old.ko) { setSrtText(d.ko, i, now.ko); if (d.txt) setTxt(d.txt, i, now.ko); if (d.lrc) setLrc(d.lrc, i, null, now.ko); }
+      if (now.ja !== old.ja) setSrtText(d.ja, i, now.ja);
+    },
+    undo: () => textJob(it, paths, i, { s: old.s, ko: now.ko, ja: now.ja }, { ko: old.ko, ja: old.ja }, true),
+  };
+}
+// 싱크: lines' times, each { i, from: { s, e }, to: { s, e } }: .ja.srt and .ko.srt alike, .lrc where a start moves
+function syncJob(it, paths, changes, label, undone) {
+  const lines = changes.length > 5 ? [`${changes.length}줄`]
+    : changes.map((x) => `${x.i + 1}번 ${msText(x.from.s)}–${msText(x.from.e)} → ${msText(x.to.s)}–${msText(x.to.e)}`);
+  return {
+    it, paths,
+    message: `자막 싱크 수정: ${workTrack(it)} ${label}${undone ? ' (되돌리기)' : ''}\n\n${lines.join('\n')}`,
+    check: (d) => changes.every((x) => { const k = d.ko.cues[x.i]; return !!k && Math.abs(k.s - x.from.s) <= 1 && Math.abs(k.e - x.from.e) <= 1; }),
+    change: (d) => {
+      for (const x of changes) {
+        setSrtTime(d.ko, x.i, x.to.s, x.to.e);
+        setSrtTime(d.ja, x.i, x.to.s, x.to.e);
+        if (d.lrc && x.to.s !== x.from.s) setLrc(d.lrc, x.i, x.to.s, null);
+      }
+    },
+    undo: () => syncJob(it, paths, changes.map((x) => ({ i: x.i, from: x.to, to: x.from })), label, true),
+  };
+}
+function saveText() {
+  const i = ed.sel, x = ed.t && ed.t.cues[i], ko = $('edKo'), ja = $('edJa');
+  if (!x || !ko || !ja || ed.busy) return;
+  const now = { ko: cleanLine(ko.value), ja: cleanLine(ja.value) };
+  if (!now.ko || !now.ja) { showErr('빈 줄로는 저장할 수 없어요'); return; }
+  if (now.ko === x.ko && now.ja === x.ja) { setSel(-1); return; }
+  runEdit(textJob(ed.it, ed.t.paths, i, x, now));
+}
+function saveSync() {
+  const c = cur(), ch = draftChanges();
+  if (!ed.draft || ed.busy) return;
+  if (c && c.vbr) { showErr(SYNC_VBR); return; }
+  if (!ch.length) { setSel(-1); return; }
+  runEdit(syncJob(ed.it, ed.t.paths, ch, lrcStamp(ed.t.cues[ed.sel].s).slice(1, -1)));
+}
+// the song's 가사 싱크 setting moved into the file: every line by that much, and the setting back to 0
+function shiftAll() {
+  const c = cur(), off = offsetOf(c), it = ed.it;
+  if (!off || !ed.t || ed.busy || it !== c) return;
+  if (!confirm(`가사 싱크 조절 ${offText(off)}를 이 곡 자막의 모든 줄 시각에 반영할까요? 반영하면 이 곡의 조절 값은 0으로 돌아가요.`)) return;
+  const dd = Math.round(off * 1000);
+  const changes = ed.t.cues.map((x, i) => {
+    const s = Math.max(0, x.s + dd);
+    return { i, from: { s: x.s, e: x.e }, to: { s, e: Math.max(s + MIN_LEN, x.e + dd) } };
+  });
+  const setOff = (v) => {
+    if (v) state.offsets[offKey(c)] = v; else delete state.offsets[offKey(c)];
+    store.set('offsets', state.offsets);
+    tickLyrics(true);
+  };
+  const job = syncJob(it, ed.t.paths, changes, `전체 ${offText(off)}`), undo = job.undo;
+  job.after = () => setOff(0);
+  job.undo = () => Object.assign(undo(), { after: () => setOff(off) });
+  runEdit(job);
+}
+
+class EditError extends Error {
+  constructor(msg, files) { super(msg); this.files = files || null; }   // files: the track as it is now, when the line changed
+}
+async function readAt(name, token, path, ref) {
+  const j = await gh(`${rp(name)}/contents/${urlPath(path)}?ref=${ref}`, token, { missing: true });
+  if (!j) return null;
+  const b64 = j.encoding === 'base64' && j.content ? j.content : (await gh(`${rp(name)}/git/blobs/${j.sha}`, token)).content;
+  return { path, sha: j.sha, text: await b64Text(b64) };
+}
+// one commit on the default branch with the job's change; the track's files as they now are
+async function commitEdit(job) {
+  const { name, token } = repo.cfg, branch = repo.cfg.branch || 'main';
+  for (let tries = 0; ; tries++) {
+    const head = await gh(`${rp(name)}/branches/${encodeURIComponent(branch)}`, token);
+    const at = head.commit.sha, keys = Object.keys(job.paths);
+    const got = await Promise.all(keys.map((k) => readAt(name, token, job.paths[k], at)));
+    const files = {}, d = {};
+    keys.forEach((k, n) => { if (got[n]) { files[k] = got[n]; d[k] = DOC[k](got[n].text); } });
+    if (!d.ko || !d.ja) throw new EditError('저장소에서 이 곡의 자막 파일을 찾지 못했어요');
+    const bad = trackProblem(d);
+    if (bad) throw new EditError(`저장소의 이 곡 자막 파일이 서로 맞지 않아서 고칠 수 없어요(${bad})`);
+    if (!job.check(d)) throw new EditError('그사이 저장소에서 이 줄이 바뀌었어요. 새로 불러왔으니 다시 고쳐 주세요', files);
+    job.change(d);
+    const after = trackProblem(reparse(d));
+    if (after) throw new EditError(`고친 결과가 저장소 검사를 통과하지 못해서 저장하지 않았어요(${after})`);
+    const out = keys.filter((k) => d[k] && docText(d[k]) !== files[k].text).map((k) => ({ key: k, path: files[k].path, text: docText(d[k]) }));
+    if (!out.length) return files;
+    const tree = await gh(`${rp(name)}/git/trees`, token, { method: 'POST', body: {
+      base_tree: head.commit.commit.tree.sha, tree: out.map((f) => ({ path: f.path, mode: '100644', type: 'blob', content: f.text })),
+    } });
+    const commit = await gh(`${rp(name)}/git/commits`, token, { method: 'POST', body: { message: job.message, tree: tree.sha, parents: [at] } });
+    try {
+      await gh(`${rp(name)}/git/refs/heads/${urlPath(branch)}`, token, { method: 'PATCH', body: { sha: commit.sha } });
+    } catch (e) {
+      if (e.status === 422 && tries < 2) continue;   // another commit came in between: from the new head again
+      if (e.status === 422) throw new EditError('그사이 저장소가 계속 바뀌어서 저장하지 못했어요. 다시 해 보세요');
+      throw e;
+    }
+    for (const f of out) files[f.key] = { path: f.path, text: f.text, sha: '' };
+    return files;
+  }
+}
+async function blobSha(text) {   // the name git gives the file's contents
+  const body = new TextEncoder().encode(text), head = new TextEncoder().encode(`blob ${body.length}\0`);
+  const all = new Uint8Array(head.length + body.length);
+  all.set(head);
+  all.set(body, head.length);
+  return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-1', all)), (b) => b.toString(16).padStart(2, '0')).join('');
+}
+// the files as they are at the branch head go into the kept list and blobs, so nothing is fetched again
+async function keepFiles(files) {
+  const t = repo.tree;
+  if (!t || t.repo !== repo.cfg.name) return;
+  const at = new Map(t.files.map(([p], n) => [p, n]));
+  for (const f of Object.values(files)) {
+    const sha = f.sha || await blobSha(f.text).catch(() => '');
+    if (!sha) continue;
+    await kv.set('b:' + sha, f.text);
+    const n = at.get(f.path);
+    if (n != null) t.files[n] = [f.path, sha];
+  }
+  applyTree(t);
+  kv.set('tree', t);
+  matchRepo(state.queue);
+  renderQueue();
+}
+function editFrom(files) {
+  const d = { ko: srtDoc(files.ko.text), ja: srtDoc(files.ja.text) };
+  Object.assign(ed, { t: { sig: editSig(editTarget(ed.it)), paths: ed.t.paths, cues: cuesOf(d) }, sel: -1, draft: null, painted: null });
+  showEdit();
+}
+async function runEdit(job, undone) {
+  if (ed.busy) { toast('저장하는 중이에요. 끝난 뒤에 다시 해 주세요'); return; }
+  ed.busy = true;
+  paintBusy();
+  try {
+    const files = await commitEdit(job);
+    await keepFiles(files);
+    if (job.after) job.after();
+    if (ed.on && ed.it === job.it && cur() === job.it) editFrom(files);
+    if (undone) toast('되돌렸어요');
+    else toast('저장했어요 · main에 반영했어요', '되돌리기', () => runEdit(job.undo(), true), 6000);
+  } catch (e) {
+    if (e.files) {   // the line changed meanwhile: show the track as it now is
+      await keepFiles(e.files).catch(() => {});
+      if (ed.on && ed.it === job.it && cur() === job.it) editFrom(e.files);
+      toast(e.message, null, null, 7000);
+    } else if (ed.on && ed.it === job.it && !undone) showErr(e.message);
+    else toast(e.message, null, null, 7000);
+  } finally {
+    ed.busy = false;
+    paintBusy();
+  }
+}
+
+function edAct(a) {
+  const [k, v] = a.split(':');
+  if (k === 'close') setSel(-1);
+  else if (k === 'play') playLine();
+  else if (k === 'save') { if (ed.mode === 'text') saveText(); else saveSync(); }
+  else if (k === 'shift') shiftAll();
+  else if (k === 'reset') { const x = ed.t.cues[ed.sel]; ed.draft = { s: x.s, e: x.e }; paintDraft(); renderEditPanel(); }
+  else if (k === 's' || k === 'e') nudge(k, v);
+}
+// the editor grows and shrinks (a message, a longer line): the lyrics box and a toast keep their places
+if (window.ResizeObserver) new ResizeObserver(() => { relayoutLyrics(); if (!els.toast.hidden) placeToast(); }).observe(els.edPanel);
+els.editBtn.addEventListener('click', startEdit);
+els.edDone.addEventListener('click', () => { if (!editDirty() || confirm('저장하지 않은 수정이 있어요. 버리고 편집을 마칠까요?')) endEdit(); });
+els.edText.addEventListener('click', () => setEditMode('text'));
+els.edSync.addEventListener('click', () => setEditMode('sync'));
+els.edBaseJa.addEventListener('click', () => setEditBase('ja'));
+els.edBaseKo.addEventListener('click', () => setEditBase('ko'));
+const edClick = (e) => { const b = e.target.closest('[data-ed]'); if (b && !b.disabled) edAct(b.dataset.ed); };
+els.edPanel.addEventListener('click', edClick);
+els.edNote.addEventListener('click', edClick);
+els.edPanel.addEventListener('input', (e) => {
+  const t = e.target;
+  if (t.tagName !== 'TEXTAREA') return;
+  if (/[\r\n]/.test(t.value)) t.value = t.value.replace(/[\r\n]+/g, ' ');   // one line each, as the files keep them
+  fitArea(t);
+});
+els.edPanel.addEventListener('keydown', (e) => {
+  if (e.target.tagName !== 'TEXTAREA') return;
+  if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); edAct('save'); }
+  else if (e.key === 'Escape') { e.preventDefault(); edAct('close'); }
+});
 
 function applyLyricStyle() {
   document.documentElement.style.setProperty('--lyric-size', state.fontSize + 'px');
@@ -2108,7 +2708,7 @@ mainEl.addEventListener('pointerdown', (e) => {
     swipe = null;
   }
   if (e.pointerType !== 'touch' || !e.isPrimary || drag) return;
-  if (e.clientX < 20 || e.clientX > innerWidth - 20 || e.target.closest('.grip')) return;
+  if (e.clientX < 20 || e.clientX > innerWidth - 20 || e.target.closest('.grip, .edpanel')) return;   // the editor: a drag in its text moves the caret
   swipe = { id: e.pointerId, x: e.clientX, y: e.clientY, dx: 0, v: 0, pt: e.timeStamp, lock: '', panel: panelOf(state.tab) };
 });
 mainEl.addEventListener('pointermove', (e) => {
@@ -2325,7 +2925,7 @@ function repoStatusHTML() {
   const parts = [];
   if (repo.status === 'err') parts.push(`<b>${esc(repo.msg)}</b>`);
   if (!repo.cfg.token) {
-    if (!parts.length) parts.push('<b>연결 안 됨</b> · 비공개 GitHub 저장소의 자막을 쓰려면 읽기 전용 토큰을 넣고 연결하세요.');
+    if (!parts.length) parts.push('<b>연결 안 됨</b> · 비공개 GitHub 저장소의 자막을 쓰려면 토큰을 넣고 연결하세요.');
     return parts.join('<br>');
   }
   if (repo.status !== 'err') parts.push(`<b>연결됨</b> · ${esc(repo.cfg.name)}`);
@@ -2357,7 +2957,7 @@ const repoSheet = () => {
         <button class="btn primary" type="button" data-act="repo:connect">${has ? '다시 연결' : '연결'}</button>
         ${has ? '<button class="btn" type="button" data-act="repo:refresh">목록 새로고침</button>' : ''}
       </div>
-      <p class="hint">토큰은 GitHub › Settings › Developer settings › Fine-grained tokens에서 만들어요. Repository access는 Only select repositories로 이 저장소 하나만, Permissions는 Contents: Read-only만 주세요. 토큰은 이 기기의 브라우저에만 저장돼요.</p>
+      <p class="hint">토큰은 GitHub › Settings › Developer settings › Fine-grained tokens에서 만들어요. Repository access는 Only select repositories로 이 저장소 하나만, Permissions는 Contents만 주세요: 듣기만 하면 Read-only, 가사 탭의 편집으로 자막을 고치려면 Read and write. 토큰은 이 기기의 브라우저에만 저장돼요.</p>
     </div>
     ${has ? `<div class="sw-row">
       <div class="set-h"><b>저장소 자막 쓰기</b><small>곡을 추가하면 폴더 이름의 RJ 번호로, 없으면 성우 이름 폴더에서 자막을 찾아 받아 둬요. 곡 옆의 가사 파일보다 먼저 써요</small></div>
@@ -2454,6 +3054,7 @@ els.sheetBody.addEventListener('click', (e) => {
     if (nv === 0) delete state.offsets[k]; else state.offsets[k] = clamp(nv, -30, 30);
     store.set('offsets', state.offsets);
     tickLyrics(true);
+    if (ed.on) renderEdit();
   } else if (act === 'fs') {
     state.fontSize = clamp(state.fontSize + +val, 14, 34);
     store.set('fontSize', state.fontSize);
@@ -2567,11 +3168,11 @@ function renderSubNote() { els.qSubNote.textContent = state.subDirs ? '하위 �
 
 /* ---------- toast ---------- */
 let toastTimer = 0, toastFn = null;
-// the shown panel's button rows are at its bottom; the toast goes just above them
+// the shown panel's button rows (and the lyrics editor) are at its bottom; the toast goes just above them
 function placeToast() {
   const p = state.tab === 'queue' ? els.panelQueue : state.tab === 'lyrics' ? els.panelLyrics : null;
   let h = 0;
-  if (p) for (const b of p.children) if (b.classList.contains('bar') && !b.hidden) h += b.offsetHeight;
+  if (p) for (const b of p.children) if (/\b(bar|edpanel|ednote)\b/.test(b.className) && !b.hidden) h += b.offsetHeight + (b.classList.contains('bar') ? 0 : 6);
   els.toast.style.bottom = h + 12 + 'px';
 }
 function toast(msg, actLabel, fn, ms) {
