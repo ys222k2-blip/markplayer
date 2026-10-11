@@ -671,6 +671,7 @@ const state = {
   offsets: store.get('offsets', {}) || {},
   theme: THEMES[savedTheme] ? savedTheme : 'auto',
   subDirs: !!store.get('subDirs', false),   // a picked or dropped folder brings its subfolders' files too
+  autoPlay: store.get('autoPlay', true) !== false,   // songs just added start playing unless something already is
   skip: SKIPS.includes(savedSkip) ? savedSkip : 10,
   names: NAME_MODES[savedNames] ? savedNames : 'orig',
   select: false, selected: new Set(),
@@ -1696,8 +1697,11 @@ function addFiles(list, opts = {}) {
   items.forEach(checkVbr);
   if (items.length) matchRepo(state.queue);   // against the kept file list; repoAfterAdd checks for a newer one
 
-  if (restore && restore.cur) loadItem(restore.cur, { startAt: restore.t });
-  else if (!cur() && items.length) loadItem(items[0]);
+  // 「바로 재생」: unless something is playing, the first new song (or where the restored list stopped) starts
+  const start = !!(state.autoPlay && items.length && audio.paused);
+  if (restore && restore.cur) loadItem(restore.cur, { startAt: restore.t, autoplay: start });
+  else if (items.length && !cur()) loadItem(items[0], { autoplay: start });
+  else if (start) go(items[0], { autoplay: true });
   else if (lyrCount) loadLyrics();
   renderQueue();
   saveSession(true);
@@ -1705,7 +1709,7 @@ function addFiles(list, opts = {}) {
   const skip = (dup ? ` · 이미 있는 ${dup}곡은 건너뛰었어요` : '') + (deep ? ` · 하위 폴더의 ${deep}곡은 넣지 않았어요` : '');
   const rk = repo.cfg.on ? items.filter((x) => x.repo).length : 0;
   const rs = rk ? ` · 저장소 자막 ${rk}곡` : '';
-  if (restore && restore.cur) toast(`${items.length}곡 추가${rs} · 지난번 위치(${fmt(restore.t)})부터 이어서 들을 수 있어요`);
+  if (restore && restore.cur) toast(`${items.length}곡 추가${rs} · 지난번 위치(${fmt(restore.t)})부터 이어서 ${start ? '재생해요' : '들을 수 있어요'}`);
   else if (items.length && lyrCount) toast(`${items.length}곡과 가사 ${lyrCount}개를 추가했어요${rs}${skip}`);
   else if (items.length) toast(`${items.length}곡을 추가했어요${rs}${skip}`);
   else if (lyrCount) toast(`가사 ${lyrCount}개를 추가했어요${skip || '. 이름이 같은 곡에 붙어요'}`);
@@ -1718,6 +1722,19 @@ function addFiles(list, opts = {}) {
 for (const inp of [els.fileInput, els.dirInput]) {
   inp.addEventListener('change', () => { addFiles(inp.files); inp.value = ''; });
 }
+// iOS starts an audio element without a tap only once that element has been played from one, and the pickers answer
+// after the tap is over. So the tap on 「파일 추가」·「폴더 추가」 plays the still empty element once: nothing sounds,
+// and the songs it brings can start by themselves. Not when a song is loaded: that would be a real start and stop.
+let audioUnlocked = false;
+function unlockAudio() {
+  if (audioUnlocked || !state.autoPlay || audio.getAttribute('src')) return;
+  audioUnlocked = true;
+  const p = audio.play();
+  if (p && p.catch) p.catch(() => { /* no source yet: only the tap mattered */ });
+  audio.pause();
+}
+audio.addEventListener('playing', () => { audioUnlocked = true; });
+document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('label[for="fileInput"], label[for="dirInput"]')) unlockAudio(); }, true);
 
 /* drop files or folders anywhere on the page (a computer, or an iPad side by side). A folder brings only its own
    files, like the folder picker, unless the settings say subfolders too. Every file drop is taken, so a missed one
@@ -3176,6 +3193,9 @@ els.sheetBody.addEventListener('click', (e) => {
     state.subDirs = !state.subDirs;
     store.set('subDirs', state.subDirs);
     renderSubNote();
+  } else if (act === 'autoplay') {
+    state.autoPlay = !state.autoPlay;
+    store.set('autoPlay', state.autoPlay);
   } else if (act === 'skip') {
     state.skip = +val;
     store.set('skip', state.skip);
@@ -3225,6 +3245,10 @@ const genSheet = () => {
     <div class="sw-row">
       <div class="set-h"><b>하위 폴더도 추가</b><small>같은 곡이 든 폴더가 함께 있으면 두 번 들어갈 수 있어요</small></div>
       <button class="switch" type="button" role="switch" aria-checked="${state.subDirs}" aria-label="하위 폴더도 추가" data-act="sub"></button>
+    </div>
+    <div class="sw-row">
+      <div class="set-h"><b>파일 추가 시 바로 재생</b><small>재생 중이 아니면 새로 넣은 첫 곡부터(이어 듣기면 지난 위치부터) 재생해요</small></div>
+      <button class="switch" type="button" role="switch" aria-checked="${state.autoPlay}" aria-label="파일 추가 시 바로 재생" data-act="autoplay"></button>
     </div>
     <div class="set inline">
       <div class="set-h"><b>건너뛰기 간격</b></div>
@@ -3313,7 +3337,7 @@ document.addEventListener('keydown', (e) => {
   const tag = (e.target && e.target.tagName) || '';
   if (tag === 'LABEL' && (e.key === 'Enter' || e.key === ' ')) {   // the file-add labels stand in for hidden inputs
     const inp = $(e.target.htmlFor);
-    if (inp) { e.preventDefault(); inp.click(); }
+    if (inp) { e.preventDefault(); unlockAudio(); inp.click(); }
     return;
   }
   if (e.altKey || e.ctrlKey || e.metaKey) return;                   // leave browser shortcuts like Alt+← alone
