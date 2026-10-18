@@ -3267,7 +3267,7 @@ function settingsPage(p) {
   els.setLyr.setAttribute('aria-selected', String(p !== 'gen'));
   return SETTINGS[p];
 }
-els.appMenu.addEventListener('click', () => openSheet(...settingsPage(state.tab === 'lyrics' ? 'lyr' : 'gen'), true));
+els.appMenu.addEventListener('click', () => openSheet(...settingsPage('gen'), true));
 els.setGen.addEventListener('click', () => switchSheet(...settingsPage('gen')));
 els.setLyr.addEventListener('click', () => switchSheet(...settingsPage('lyr')));
 
