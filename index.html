@@ -182,8 +182,10 @@ body.dropping #app::after{content:"";position:fixed;inset:8px;z-index:60;border:
 .ln.on{color:var(--fg)}
 .ln.on .sub{color:var(--muted)}
 .ln.on.gap{color:var(--muted)}
-/* scrolled by hand, or settings › 현재 가사 표시 › 글자색: no box, the current line in blue (between SRT lines too) */
+/* scrolled by hand, or settings › 현재 가사 표시 › 글자색: no box, the current line in blue.
+   글자색 is the quiet one: between SRT lines the line goes back to the others' color (scrolled under 박스, it stays blue). */
 .lyrics.free .ln.on,.lyrics.tint .ln.on{color:var(--accent)}
+.lyrics.tint .ln.on.gap{color:var(--muted)}
 /* fixed box in the middle of the lyrics view; lines scroll through it */
 .lwrap{flex:1;min-height:0;position:relative;display:flex;flex-direction:column}
 .lwrap .lyrics{position:relative;z-index:1}
@@ -2995,7 +2997,7 @@ const lyrSheet = () => {
     <div class="set inline">
       <div class="set-h"><b>현재 가사 표시</b></div>
       <div class="seg" role="group" aria-label="현재 가사 표시">${segBtns('hl', [['box', '박스'], ['text', '글자색']], state.hl)}</div>
-      <p class="hint">${state.hl === 'box' ? '지금 줄을 파란 박스로 감싸요. SRT는 줄 사이 쉬는 동안 점선으로 흐려져요' : '박스 없이 지금 줄만 파란 글자로 보여요. 가사를 손으로 넘겨 볼 때와 같아요'}</p>
+      <p class="hint">${state.hl === 'box' ? '지금 줄을 파란 박스로 감싸요. SRT는 줄 사이 쉬는 동안 점선으로 흐려져요' : '박스 없이 지금 줄만 파란 글자로 보여요. SRT는 줄 사이 쉬는 동안 다른 줄과 같은 색으로 돌아가요'}</p>
     </div>
     <div class="set inline">
       <div class="set-h"><b>자막 언어</b></div>
