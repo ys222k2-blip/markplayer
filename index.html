@@ -18,7 +18,7 @@
 <style id="css">
 /* Layout: one-screen app, every control at the bottom where the thumb is (like Safari's address bar):
    the panel scrolls, under it the panel's own buttons, then the transport dock, then the logo and the tabs.
-   The single bold element is the current-lyric box; everything else stays quiet. */
+   The single bold element is the current-lyric box (or, by the setting, the line's blue text); everything else stays quiet. */
 :root{
   --bg:#F1F2F6; --raise:#FFFFFF; --sunk:#E4E6EE; --line:#D6D9E3;
   --fg:#151925; --muted:#5E6579; --faint:#9CA1B2;
@@ -182,7 +182,8 @@ body.dropping #app::after{content:"";position:fixed;inset:8px;z-index:60;border:
 .ln.on{color:var(--fg)}
 .ln.on .sub{color:var(--muted)}
 .ln.on.gap{color:var(--muted)}
-.lyrics.free .ln.on{color:var(--accent)}
+/* scrolled by hand, or settings › 현재 가사 표시 › 글자색: no box, the current line in blue (between SRT lines too) */
+.lyrics.free .ln.on,.lyrics.tint .ln.on{color:var(--accent)}
 /* fixed box in the middle of the lyrics view; lines scroll through it */
 .lwrap{flex:1;min-height:0;position:relative;display:flex;flex-direction:column}
 .lwrap .lyrics{position:relative;z-index:1}
@@ -665,6 +666,7 @@ const state = {
   fontSize: clamp(+store.get('fontSize', 20) || 20, 14, 34),
   fontFam: store.get('fontFam', 'serif') === 'sans' ? 'sans' : 'serif',
   align: store.get('align', 'center') === 'left' ? 'left' : 'center',
+  hl: store.get('hl', 'box') === 'text' ? 'text' : 'box',   // the current line: in the box, or only its text in blue
   autoReturn: store.get('autoReturn', true) !== false,
   keepAwake: !!store.get('keepAwake', false),
   jaMode: store.get('jaMode', 'ko') === 'both' ? 'both' : 'ko',
@@ -1958,10 +1960,10 @@ function scrollToActive(instant) {
 }
 
 // The box stays put in the middle of the view; it only resizes to fit the current line
-// and fades out while the lyrics are being scrolled by hand.
+// and fades out while the lyrics are being scrolled by hand. With 현재 가사 표시 › 글자색 it never shows.
 function placeFrame(gap) {
   const li = lyr.active >= 0 ? els.lyrics.children[lyr.active] : null;
-  const show = !!(li && follow && lyr.data && lyr.data.timed && !els.lWrap.hidden);
+  const show = !!(li && follow && state.hl === 'box' && lyr.data && lyr.data.timed && !els.lWrap.hidden);
   if (show) els.lFrame.style.height = li.offsetHeight + 'px';
   els.lFrame.classList.toggle('show', show);
   els.lFrame.classList.toggle('gap', !!gap);
@@ -2571,6 +2573,7 @@ function applyLyricStyle() {
   document.documentElement.style.setProperty('--lyric-size', state.fontSize + 'px');
   els.lScroll.classList.toggle('sans', state.fontFam === 'sans');
   els.lScroll.classList.toggle('center', state.align === 'center');
+  els.lScroll.classList.toggle('tint', state.hl === 'text');
 }
 
 /* ---------- tabs ---------- */
@@ -2990,6 +2993,11 @@ const lyrSheet = () => {
       </div>
     </div>
     <div class="set inline">
+      <div class="set-h"><b>현재 가사 표시</b></div>
+      <div class="seg" role="group" aria-label="현재 가사 표시">${segBtns('hl', [['box', '박스'], ['text', '글자색']], state.hl)}</div>
+      <p class="hint">${state.hl === 'box' ? '지금 줄을 파란 박스로 감싸요. SRT는 줄 사이 쉬는 동안 점선으로 흐려져요' : '박스 없이 지금 줄만 파란 글자로 보여요. 가사를 손으로 넘겨 볼 때와 같아요'}</p>
+    </div>
+    <div class="set inline">
       <div class="set-h"><b>자막 언어</b></div>
       <div class="seg" role="group" aria-label="자막 언어">
         <button type="button" data-act="ja:ko" class="${state.jaMode === 'ko' ? 'on' : ''}" aria-pressed="${state.jaMode === 'ko'}">한국어만</button>
@@ -3174,6 +3182,11 @@ els.sheetBody.addEventListener('click', (e) => {
     store.set('fontFam', val);
     applyLyricStyle();
     tickLyrics(true);
+  } else if (act === 'hl') {
+    state.hl = val;
+    store.set('hl', val);
+    applyLyricStyle();
+    placeFrame(els.lFrame.classList.contains('gap'));
   } else if (act === 'auto') {
     state.autoReturn = !state.autoReturn;
     store.set('autoReturn', state.autoReturn);
