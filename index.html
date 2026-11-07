@@ -182,6 +182,7 @@ body.dropping #app::after{content:"";position:fixed;inset:8px;z-index:60;border:
 .ln.on{color:var(--fg)}
 .ln.on .sub{color:var(--muted)}
 .ln.on.gap{color:var(--muted)}
+.ln.loop{background:var(--accent-soft)}   /* repeated (가사 반복, or inside A-B) */
 /* scrolled by hand, or settings › 현재 가사 표시 › 글자색: no box, the current line in blue.
    글자색 is the quiet one: between SRT lines the line goes back to the others' color (scrolled under 박스, it stays blue). */
 .lyrics.free .ln.on,.lyrics.tint .ln.on{color:var(--accent)}
@@ -258,15 +259,31 @@ body.playing .a-song .eq{display:inline-flex}
 .thumb{position:absolute;top:50%;left:0;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--bg);transition:transform .15s}
 .seek.active .track{height:8px}
 .seek.active .thumb{transform:scale(1.25)}
-.times{display:flex;justify-content:space-between;margin-top:-3px;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
-.transport{display:flex;align-items:center;justify-content:space-between;padding:0 2px}
-.tb{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--fg)}
+/* the stretch being repeated: a soft band taller than the track (it shows past the played part), a tick at each end */
+.lp-band{position:absolute;top:-5px;bottom:-5px;border-radius:4px;background:var(--accent);opacity:.18}
+.lp-tick{position:absolute;top:-5px;bottom:-5px;width:2px;margin-left:-1px;border-radius:1px;background:var(--accent)}
+/* the middle says what repeats; it only shows (the seek bar's touch area lies over this row) */
+.times{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;margin-top:-3px;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+#tRem{text-align:right}
+.lp-txt{color:var(--accent);font-weight:600;white-space:nowrap}
+/* ⏮ 가사 반복 ⟲ ▶ ⟳ A-B ⏭: the songs at the ends and biggest after play, the two repeats quiet until on */
+.transport{display:flex;align-items:center;justify-content:space-between}
+.tb{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--fg)}
 .tb svg{width:26px;height:26px}
-.tb.skip svg{width:30px;height:30px}
-.tb.play{width:62px;height:62px;background:var(--accent);color:var(--on-accent)}
+.tb.trk{width:46px;height:46px}
+.tb.trk svg{width:32px;height:32px}
+.tb.skip svg{width:27px;height:27px}
+.tb.rep{color:var(--muted)}
+.tb.rep svg{width:25px;height:25px}
+.tb.rep text{fill:currentColor}
+.tb.rep.half .a{fill:var(--accent)}
+.tb.rep.on{background:var(--accent-soft);color:var(--accent)}
+.tb:disabled{opacity:.35}
+.tb.play{width:58px;height:58px;background:var(--accent);color:var(--on-accent)}
 .tb.play svg{width:28px;height:28px}
 .tb:active{background:var(--sunk)}
 .tb.play:active{background:var(--accent);filter:brightness(.9)}
+@media (max-width:350px){.tb{width:38px;height:38px}.tb.trk{width:40px;height:40px}.tb.play{width:52px;height:52px}}
 .extras{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:2px}
 .xb{height:34px;min-width:0;padding:0 6px;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--sunk);color:var(--muted);font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
 .xb span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -339,6 +356,15 @@ body.playing .a-song .eq{display:inline-flex}
 .field textarea{width:100%;min-height:42px;max-height:7.6em;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg);font:inherit;font-size:16px;font-weight:400;line-height:1.4;resize:none;overflow-y:auto}
 .btnrow{display:flex;flex-wrap:wrap;gap:8px}
 .opt.nav{min-height:52px;margin:0 -10px}
+/* settings › 일반 › 키보드 단축키 */
+.keys{display:flex;flex-direction:column;padding:12px 0 4px;border-top:1px solid var(--line)}
+.keys:first-of-type{border-top:0;padding-top:10px}
+.keys h3{margin:0 0 4px;font-size:12.5px;font-weight:650;color:var(--muted)}
+.krow{display:flex;align-items:center;gap:12px;min-height:40px;padding:4px 0}
+.krow .kk{flex:none;width:92px;display:flex;flex-wrap:wrap;align-items:center;gap:4px;font-size:12px;color:var(--faint)}
+.krow span:last-child{flex:1;min-width:0;font-size:14px;line-height:1.4;word-break:keep-all;overflow-wrap:anywhere}
+.krow small{display:block;font-size:12.5px;color:var(--muted)}
+kbd{min-width:26px;height:26px;padding:0 7px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;background:var(--bg);color:var(--fg);font:600 12.5px var(--font-ui)}
 .opt .chev{width:18px;height:18px;flex:none;color:var(--faint)}
 .opt b{overflow-wrap:anywhere}
 
@@ -381,6 +407,9 @@ body.playing .a-song .eq{display:inline-flex}
     <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
     <symbol id="i-doc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8M8 9h2"/></symbol>
     <symbol id="i-locate"viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></symbol>
+    <!-- 가사 반복: the lyrics tab's bubble with a loop in it -->
+    <symbol id="i-lrep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M15.6 10A3.6 3.6 0 1 1 13.8 6.88"/><path d="M13.05 4.8l.75 2.08-2.17.38"/></symbol>
+    <symbol id="i-keys" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 13h.01M10 13h.01M14 13h.01M18 13h.01M8 16h8"/></symbol>
   </defs>
 </svg>
 
@@ -474,16 +503,19 @@ body.playing .a-song .eq{display:inline-flex}
       <div class="now-s" id="nowSub"></div>
     </div>
     <div class="seek" id="seek" role="slider" tabindex="0" aria-label="재생 위치" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" aria-valuetext="0:00">
-      <div class="track" id="seekTrack"><div class="fill" id="seekFill"></div><div class="thumb" id="seekThumb"></div></div>
+      <div class="track" id="seekTrack"><div class="lp-band" id="lpBand" hidden></div><div class="fill" id="seekFill"></div><i class="lp-tick" id="lpA" hidden></i><i class="lp-tick" id="lpB" hidden></i><div class="thumb" id="seekThumb"></div></div>
     </div>
-    <div class="times"><span id="tCur">0:00</span><span id="tRem">0:00</span></div>
+    <div class="times"><span id="tCur">0:00</span><span class="lp-txt" id="lpText" aria-live="polite"></span><span id="tRem">0:00</span></div>
     <div class="transport">
-      <button class="tb" id="bPrev" type="button" aria-label="이전 곡"><svg><use href="#i-prev"/></svg></button>
+      <button class="tb trk" id="bPrev" type="button" aria-label="이전 곡"><svg><use href="#i-prev"/></svg></button>
+      <button class="tb rep" id="bLine" type="button" aria-label="가사 한 줄 반복" aria-pressed="false" aria-keyshortcuts="R" disabled><svg><use href="#i-lrep"/></svg></button>
       <!-- drawn here, not as a symbol, so the number follows the skip setting -->
-      <button class="tb skip" id="bBack" type="button" aria-label="10초 뒤로"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/><text x="12.3" y="15.3" text-anchor="middle" font-size="7.8" font-weight="700" fill="currentColor" stroke="none" font-family="-apple-system,system-ui,sans-serif">10</text></svg></button>
-      <button class="tb play" id="bPlay" type="button" aria-label="재생"><svg><use id="playIcon" href="#i-play"/></svg></button>
-      <button class="tb skip" id="bFwd" type="button" aria-label="10초 앞으로"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/><text x="11.7" y="15.3" text-anchor="middle" font-size="7.8" font-weight="700" fill="currentColor" stroke="none" font-family="-apple-system,system-ui,sans-serif">10</text></svg></button>
-      <button class="tb" id="bNext" type="button" aria-label="다음 곡"><svg><use href="#i-next"/></svg></button>
+      <button class="tb skip" id="bBack" type="button" aria-label="10초 뒤로" aria-keyshortcuts="ArrowLeft"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/><text x="12.3" y="15.3" text-anchor="middle" font-size="7.8" font-weight="700" fill="currentColor" stroke="none" font-family="-apple-system,system-ui,sans-serif">10</text></svg></button>
+      <button class="tb play" id="bPlay" type="button" aria-label="재생" aria-keyshortcuts="Space"><svg><use id="playIcon" href="#i-play"/></svg></button>
+      <button class="tb skip" id="bFwd" type="button" aria-label="10초 앞으로" aria-keyshortcuts="ArrowRight"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/><text x="11.7" y="15.3" text-anchor="middle" font-size="7.8" font-weight="700" fill="currentColor" stroke="none" font-family="-apple-system,system-ui,sans-serif">10</text></svg></button>
+      <!-- A-B: its letters light up one by one (시작 picked: A; repeating: both, on the soft blue) -->
+      <button class="tb rep" id="bAB" type="button" aria-label="구간 반복: 시작 찍기" aria-pressed="false" aria-keyshortcuts="A" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><text class="a" x="6.2" y="16" text-anchor="middle" font-size="11" font-weight="800" font-family="-apple-system,system-ui,sans-serif">A</text><path d="M10.2 12h3.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><text x="17.8" y="16" text-anchor="middle" font-size="11" font-weight="800" font-family="-apple-system,system-ui,sans-serif">B</text></svg></button>
+      <button class="tb trk" id="bNext" type="button" aria-label="다음 곡"><svg><use href="#i-next"/></svg></button>
     </div>
     <div class="extras">
       <button class="xb" id="bMode" type="button" aria-label="재생 모드"><svg><use id="modeIcon" href="#i-all"/></svg><span id="modeLabel">전체재생</span></button>
@@ -700,6 +732,7 @@ const els = {
   toast: $('toast'), toastMsg: $('toastMsg'), toastAct: $('toastAct'),
   nowTitle: $('nowTitle'), nowSub: $('nowSub'), seek: $('seek'), seekTrack: $('seekTrack'), seekFill: $('seekFill'), seekThumb: $('seekThumb'), tCur: $('tCur'), tRem: $('tRem'),
   bPrev: $('bPrev'), bBack: $('bBack'), bPlay: $('bPlay'), playIcon: $('playIcon'), bFwd: $('bFwd'), bNext: $('bNext'),
+  bLine: $('bLine'), bAB: $('bAB'), lpBand: $('lpBand'), lpA: $('lpA'), lpB: $('lpB'), lpText: $('lpText'),
   bMode: $('bMode'), modeIcon: $('modeIcon'), modeLabel: $('modeLabel'), bRate: $('bRate'), rateLabel: $('rateLabel'), bSleep: $('bSleep'), sleepLabel: $('sleepLabel'),
   sheetWrap: $('sheetWrap'), sheet: $('sheet'), sheetTitle: $('sheetTitle'), sheetBody: $('sheetBody'), sheetClose: $('sheetClose'),
   setTabs: $('setTabs'), setGen: $('setGen'), setLyr: $('setLyr'), appMenu: $('appMenu'),
@@ -1201,6 +1234,7 @@ function loadItem(it, opts = {}) {
   pendingSeek = opts.startAt || 0;
   autoAdvance = !!opts.auto;
   ed.range = null;
+  clearLoop();   // a stretch belongs to its song
   if (opts.autoplay) doPlay();
   onTrackChanged();
 }
@@ -1222,6 +1256,7 @@ function clearPlayer() {
   if (curUrl) URL.revokeObjectURL(curUrl);
   curUrl = null;
   state.curId = null;
+  clearLoop();
   onTrackChanged();
 }
 
@@ -1272,22 +1307,26 @@ function nextManual() {
   if (it) go(it, { autoplay: playing });
 }
 
+// a few seconds in, back to the start (of the repeated stretch, while one repeats); otherwise the song before
 function prevManual() {
   if (!cur()) return;
-  const playing = !audio.paused;
-  if (audio.currentTime > 3) { audio.currentTime = 0; return; }
+  const playing = !audio.paused, start = looping() ? loop.a : 0;
+  if (audio.currentTime > start + 3) { audio.currentTime = start; return; }
   let it = null;
   if (state.mode === 'shuffle') {
     while (state.history.length && !it) { const x = byId(state.history.pop()); if (x && !x.bad) it = x; }
   } else {
     it = neighbor(-1, state.mode === 'repeatAll');
   }
-  if (it) loadItem(it, { autoplay: playing }); else audio.currentTime = 0;
+  if (it) loadItem(it, { autoplay: playing }); else audio.currentTime = start;
 }
 
+// while a stretch repeats, skipping stays inside it: never back past its start, and past its end it starts over
 function skipBy(sec) {
   if (!(audio.duration > 0)) return;
-  audio.currentTime = clamp(audio.currentTime + sec, 0, Math.max(0, audio.duration - 0.25));
+  let t = clamp(audio.currentTime + sec, 0, Math.max(0, audio.duration - 0.25));
+  if (looping() && (t < loop.a || t >= loop.b)) t = loop.a;
+  audio.currentTime = t;
   renderProgress(); tickLyrics();
 }
 
@@ -1304,6 +1343,162 @@ function pickAfterEnd() {
   return null;
 }
 
+/* ---------- 반복: 가사 반복 (one lyric line) and A-B (a stretch picked by hand) ----------
+   One at a time, for the current song only, kept in the audio's own time: reaching b goes back to a.
+   가사 반복 takes the line in the box (between SRT lines, the one just sung) with a little room either side, never
+   into the next line; a lyric line tapped meanwhile becomes the repeated one. A-B goes 시작 → 끝 → off; with only
+   시작 picked (b null) nothing repeats yet, and an 끝 before the 시작 swaps them.
+   Moving outside the stretch from the seek bar, a lyric line or the lock screen ends it (with 되돌리기); the skip
+   buttons stay inside it and 이전 곡 goes back to its start. The playing position is checked on every frame
+   while the screen is on, on timeupdate (about 4 a second) when it's off, and by a timer set for b. */
+const LOOP_LEAD = 0.3, LOOP_TAIL = 0.3, LOOP_MIN = 0.5;   // seconds
+// kind: 'line' | 'ab' | null; id: its song; line: 가사 반복's line, by its time in the lyrics
+const loop = { kind: null, a: 0, b: null, line: null, id: null };
+const looping = () => loop.kind !== null && loop.b !== null;
+let loopTimer = 0;
+
+const canLineLoop = () => { const c = cur(); return !!(c && lyr.data && lyr.data.timed && lyr.id === c.id); };
+// the stretch for lyric line i: from just before it to just after its end (LRC has none: the next line), not into the next line
+function lineSpan(i) {
+  const c = cur(), g = canLineLoop() ? lyr.data.groups : null, x = g && g[i];
+  if (!x) return null;
+  const off = offsetOf(c), next = g[i + 1];
+  let end = isFinite(x.end) ? x.end + LOOP_TAIL : next ? next.t : Infinity;
+  if (next) end = Math.min(end, next.t);
+  const a = Math.max(0, x.t + off - LOOP_LEAD);
+  let b = Math.max(end + off, a + LOOP_MIN);
+  if (audio.duration > 0 && isFinite(audio.duration)) b = Math.min(b, audio.duration);
+  return { a, b, line: x.t };
+}
+
+// jump: when the playing position is outside the new stretch, go to its start now (A-B's 끝 just picked, a line already sung)
+function setLoop(kind, span, jump = true) {
+  const c = cur();
+  if (!c || !span) return;
+  Object.assign(loop, { kind, a: span.a, b: span.b == null ? null : span.b, line: span.line == null ? null : span.line, id: c.id });
+  renderLoop();
+  if (!looping()) return;
+  if (c.vbr && !c.vbrLoopWarned) { c.vbrLoopWarned = true; toast('VBR MP3라 되돌아갈 때마다 시작이 조금씩 어긋날 수 있어요', null, null, 6000); }
+  const t = audio.currentTime;
+  if (jump && (t >= loop.b || t < loop.a - 0.05)) loopBack();
+  armLoop();
+}
+function clearLoop() {
+  Object.assign(loop, { kind: null, a: 0, b: null, line: null, id: null });
+  clearTimeout(loopTimer);
+  loopTimer = 0;
+  renderLoop();
+}
+// back to the start; 수면 타이머 › 곡 끝나면 stops there at the end of this round
+function loopBack() {
+  if (state.sleepEnd && !audio.paused) {
+    audio.pause();
+    setSleep('off');
+    toast('수면 타이머: 반복 구간이 끝나서 멈췄어요');
+  }
+  audio.currentTime = loop.a;
+}
+// played past b. Far past it is a seek whose 'seeking' event (it comes a task later) will end the repeat: leave it be
+function checkLoop() {
+  const t = audio.currentTime;
+  if (looping() && t >= loop.b && t < loop.b + 3 * (audio.playbackRate || 1)) loopBack();
+}
+function armLoop() {
+  clearTimeout(loopTimer);
+  loopTimer = 0;
+  if (!looping() || audio.paused || !isFinite(loop.b)) return;
+  const ms = (loop.b - audio.currentTime) / (audio.playbackRate || 1) * 1000;
+  loopTimer = setTimeout(() => { loopTimer = 0; checkLoop(); armLoop(); }, Math.max(20, ms));
+}
+audio.addEventListener('play', armLoop);
+audio.addEventListener('seeked', armLoop);
+audio.addEventListener('ratechange', armLoop);
+audio.addEventListener('pause', () => { clearTimeout(loopTimer); loopTimer = 0; });
+// anything that moves the position outside the stretch ends it; the loop's own jumps and the skips land inside
+audio.addEventListener('seeking', () => {
+  if (!looping()) return;
+  const t = audio.currentTime;
+  if (t >= loop.a - 0.05 && t <= loop.b + 0.05) return;
+  const was = { ...loop };
+  clearLoop();
+  toast('구간 반복을 껐어요', '되돌리기', () => {
+    const c = cur();
+    if (!c || c.id !== was.id || loop.kind) return;
+    setLoop(was.kind, was, false);
+    audio.currentTime = was.a;
+  });
+});
+
+function toggleLineLoop() {
+  if (loop.kind === 'line') { clearLoop(); return; }
+  if (!canLineLoop()) return;
+  tickLyrics();
+  if (lyr.active < 0) { toast('아직 가사가 나오기 전이에요'); return; }
+  setLoop('line', lineSpan(lyr.active));
+}
+function pressAB() {
+  const c = cur();
+  if (!c || !(audio.duration > 0)) return;
+  const t = audio.currentTime;
+  if (loop.kind !== 'ab') { setLoop('ab', { a: t }); return; }   // 시작 (a 가사 반복 gives way)
+  if (looping()) { clearLoop(); return; }                       // 취소
+  let a = loop.a, b = t;                                         // 끝
+  if (b < a) [a, b] = [b, a];
+  if (b - a < LOOP_MIN) { toast('구간이 너무 짧아요. 조금 더 듣고 눌러 주세요'); return; }
+  setLoop('ab', { a, b });
+}
+els.bLine.addEventListener('click', toggleLineLoop);
+els.bAB.addEventListener('click', pressAB);
+
+function renderLoop() {
+  const on = looping(), isLine = loop.kind === 'line', isAB = loop.kind === 'ab', c = cur();
+  els.bLine.classList.toggle('on', isLine);
+  els.bLine.setAttribute('aria-pressed', String(isLine));
+  els.bLine.disabled = !isLine && !canLineLoop();
+  els.bAB.classList.toggle('half', isAB && !on);
+  els.bAB.classList.toggle('on', isAB && on);
+  els.bAB.setAttribute('aria-pressed', String(isAB && on));
+  els.bAB.setAttribute('aria-label', isAB ? (on ? '구간 반복: 끄기' : '구간 반복: 끝 찍기') : '구간 반복: 시작 찍기');
+  els.bAB.disabled = !c;
+  const d = audio.duration, has = !!(loop.kind && d > 0 && isFinite(d));
+  const pct = (t) => clamp(t / d, 0, 1) * 100;
+  els.lpA.hidden = !has;
+  els.lpB.hidden = els.lpBand.hidden = !(has && on);
+  if (has) {
+    els.lpA.style.left = pct(loop.a) + '%';
+    if (on) {
+      const b = Math.min(loop.b, d);
+      els.lpB.style.left = pct(b) + '%';
+      els.lpBand.style.left = pct(loop.a) + '%';
+      els.lpBand.style.width = (pct(b) - pct(loop.a)) + '%';
+    }
+  }
+  els.lpText.textContent = isLine ? '가사 한 줄 반복' : !isAB ? '' : on ? `${spanText(loop.a, loop.b)} 반복` : `A ${fmt(loop.a)} · 끝에서 한 번 더`;
+  markLoopLines();
+}
+// 1:00–1:25; both in one second, with tenths: 0:50.2–0:50.9
+function spanText(a, b) {
+  if (fmt(a) !== fmt(b)) return `${fmt(a)}–${fmt(b)}`;
+  const tenth = (t) => fmt(t) + '.' + Math.floor((t % 1) * 10);
+  return `${tenth(a)}–${tenth(b)}`;
+}
+// the lyric lines heard in the stretch get a soft background: 가사 반복's line, or every line A-B overlaps
+function markLoopLines() {
+  const c = cur(), g = lyr.data && lyr.data.timed ? lyr.data.groups : null, kids = els.lyrics.children;
+  const on = !!(looping() && g && c && c.id === lyr.id && loop.id === c.id), off = offsetOf(c);
+  for (let i = 0; i < kids.length; i++) {
+    const x = on && g[i];
+    let m = false;
+    if (x && loop.kind === 'line') m = Math.abs(x.t - loop.line) < 0.001;
+    else if (x) {
+      const s = x.t + off, e = (isFinite(x.end) ? x.end : g[i + 1] ? g[i + 1].t : Infinity) + off;
+      m = s < loop.b - 0.2 && e > loop.a + 0.2;
+    }
+    kids[i].classList.toggle('loop', m);
+  }
+}
+audio.addEventListener('durationchange', renderLoop);
+
 audio.addEventListener('ended', () => {
   if (state.sleepEnd) {
     setSleep('off');
@@ -1311,6 +1506,7 @@ audio.addEventListener('ended', () => {
     saveSession(true);
     return;
   }
+  if (looping()) { audio.currentTime = loop.a; doPlay(); return; }   // a stretch running to the song's end
   const next = pickAfterEnd();
   if (next === 'same') { audio.currentTime = 0; doPlay(); }
   else if (next) go(next, { autoplay: true, auto: true });
@@ -1340,12 +1536,13 @@ audio.addEventListener('play', () => { renderPlayState(); kick(); syncWake(); wa
 audio.addEventListener('pause', () => { renderPlayState(); renderProgress(); syncWake(); saveSession(true); });
 audio.addEventListener('seeked', () => { renderProgress(); tickLyrics(); setPos(); });
 audio.addEventListener('ratechange', setPos);
-audio.addEventListener('timeupdate', () => { renderProgress(); tickLyrics(); checkRange(); checkSleep(); saveSession(false); });
+audio.addEventListener('timeupdate', () => { checkLoop(); renderProgress(); tickLyrics(); checkRange(); checkSleep(); saveSession(false); });
 
 /* ---------- loop for smooth progress + lyrics while visible ---------- */
 let raf = 0;
 function frame() {
   raf = 0;
+  checkLoop();
   renderProgress();
   tickLyrics();
   checkRange();
@@ -1860,6 +2057,7 @@ async function loadLyrics() {
   const token = ++lyr.token;
   lyr.id = c ? c.id : null; lyr.data = null; lyr.active = -1; lyr.kind = null;
   renderVbr();
+  renderLoop();
   if (!c) { lyr.avail = { lrc: null, srt: null }; renderLyrBar(); showLyrEmpty('none'); return; }
   const av = findLyrics(c);
   lyr.avail = av;
@@ -1922,6 +2120,7 @@ function showLyrEmpty(kind, c) {
   els.lFrame.classList.remove('show');
   els.followBtn.hidden = true;
   els.lyrics.innerHTML = '';
+  renderLoop();
 }
 
 function renderLyricLines() {
@@ -1940,6 +2139,7 @@ function renderLyricLines() {
   setFollow(true, true);
   sizeSpacers();
   if (d.timed) tickLyrics(true); else els.lScroll.scrollTop = 0;
+  renderLoop();
   renderVbr();
   if (!audio.paused) warnVbr();
 }
@@ -2022,6 +2222,7 @@ els.lyrics.addEventListener('click', (e) => {
   if (ed.on) { pickLine(+li.dataset.i); return; }
   const g = lyr.data.groups[+li.dataset.i];
   if (!g || !cur()) return;
+  if (loop.kind === 'line') setLoop('line', lineSpan(+li.dataset.i), false);   // 가사 반복 moves to the tapped line
   audio.currentTime = Math.max(0, g.t + offsetOf(cur()));
   setFollow(true, true);
   tickLyrics();
@@ -3270,16 +3471,44 @@ const genSheet = () => {
       <div class="seg" role="group" aria-label="건너뛰기 간격">${segBtns('skip', SKIPS.map((n) => [n, n + '초']), state.skip)}</div>
     </div>
     <div class="set">
+      <button class="opt nav" type="button" data-act="nav:keys"><svg><use href="#i-keys"/></svg><span><b>키보드 단축키</b><small style="word-break:keep-all">Space 재생 · ← → 건너뛰기 · R · A 반복</small></span><svg class="chev"><use href="#i-chev"/></svg></button>
+    </div>
+    <div class="set">
       <button class="btn wide" type="button" data-act="app:reload"><svg><use href="#i-refresh"/></svg>새로 고침</button>
       ${hint ? `<p class="hint">${hint}</p>` : ''}
     </div>`;
 };
-const SETTINGS = { gen: ['설정', genSheet], lyr: ['설정', lyrSheet], repo: ['자막 저장소', repoSheet] };
+// 일반 › 키보드 단축키: the keys the keydown handlers (at the end) answer to
+const keysSheet = () => {
+  const row = (keys, what, sub) => `<div class="krow"><span class="kk">${keys.map((k) => `<kbd>${k}</kbd>`).join('')}</span><span>${what}${sub ? `<small>${sub}</small>` : ''}</span></div>`;
+  return `<button class="back" type="button" data-act="nav:gen"><svg><use href="#i-back"/></svg>일반</button>
+    <p class="hint">PC나 키보드를 붙인 아이패드에서 써요. 한글 입력 상태여도 같은 자리의 키로 돼요.</p>
+    <div class="keys"><h3>재생</h3>
+      ${row(['Space'], '재생 · 일시정지')}
+      ${row(['←', '→'], `${state.skip}초 뒤로 · 앞으로`, '일반 › 건너뛰기 간격으로 바꿔요')}
+      ${row(['R'], '가사 한 줄 반복 켜기 · 끄기', '지금 줄을 되풀이해요. 반복 중에 다른 가사 줄을 누르면 그 줄로 바뀌어요')}
+      ${row(['A'], '구간 반복(A-B)', '누를 때마다 시작 찍기 → 끝 찍기 → 취소')}
+    </div>
+    <div class="keys"><h3>화면</h3>
+      ${row(['1', '2', '3'], '재생목록 · 앨범 · 가사 탭')}
+      ${row(['Esc'], '열린 창 닫기')}
+    </div>
+    <div class="keys"><h3>재생 위치 막대를 Tab으로 고른 뒤</h3>
+      ${row(['←', '→'], '5초 뒤로 · 앞으로')}
+      ${row(['Home'], '곡의 처음으로')}
+    </div>
+    <div class="keys"><h3>가사 편집의 글칸에서</h3>
+      ${row(['Enter'], '저장')}
+      ${row(['Esc'], '고치는 창 닫기')}
+    </div>`;
+};
+const SETTINGS = { gen: ['설정', genSheet], keys: ['키보드 단축키', keysSheet], lyr: ['설정', lyrSheet], repo: ['자막 저장소', repoSheet] };
+const SETTINGS_TAB = { gen: 'gen', keys: 'gen', lyr: 'lyr', repo: 'lyr' };
 // marks the tab the page belongs to and gives the page's [title, render] for openSheet / switchSheet
 function settingsPage(p) {
   if (p === 'repo') repoDraft = {};
-  els.setGen.setAttribute('aria-selected', String(p === 'gen'));
-  els.setLyr.setAttribute('aria-selected', String(p !== 'gen'));
+  els.setGen.setAttribute('aria-selected', String(SETTINGS_TAB[p] === 'gen'));
+  els.setLyr.setAttribute('aria-selected', String(SETTINGS_TAB[p] === 'lyr'));
   return SETTINGS[p];
 }
 els.appMenu.addEventListener('click', () => openSheet(...settingsPage('gen'), true));
@@ -3356,11 +3585,15 @@ document.addEventListener('keydown', (e) => {
     return;
   }
   if (e.altKey || e.ctrlKey || e.metaKey) return;                   // leave browser shortcuts like Alt+← alone
-  if (/INPUT|TEXTAREA|SELECT/.test(tag) || e.target === els.seek) return;
+  if (/INPUT|TEXTAREA|SELECT/.test(tag)) return;
+  if (e.target === els.seek && /^(Arrow|Home$)/.test(e.key)) return;   // the seek bar's own: 5 s steps, Home
+  // letters by their place on the keyboard (e.code), so they work with the Korean input on too
   if (e.key === ' ' && tag !== 'BUTTON') { e.preventDefault(); togglePlay(); }
   else if (e.key === 'ArrowLeft') skipBy(-state.skip);
   else if (e.key === 'ArrowRight') skipBy(state.skip);
   else if (e.key === '1' || e.key === '2' || e.key === '3') tabTo(TABS[+e.key - 1]);
+  else if (e.code === 'KeyR' && !e.repeat) toggleLineLoop();
+  else if (e.code === 'KeyA' && !e.repeat) pressAB();
 });
 
 /* ---------- start ---------- */
@@ -3371,6 +3604,7 @@ renderMode();
 renderRate();
 renderSleep();
 renderSkip();
+renderLoop();
 renderSubNote();
 artUrl = makeArtwork();
 renderQueue();

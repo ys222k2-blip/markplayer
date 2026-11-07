@@ -7,6 +7,7 @@
 | [layout-bottom](layout-bottom.png) ([html](layout-bottom.html)) | 메뉴를 전부 아래로: 맨 아래 로고 + 탭, 그 위 재생 칸, 콘텐츠 바로 아래 탭별 버튼. 위에는 메뉴 없음 | 지금 쓰는 배치 |
 | [layout-swap](layout-swap.png) ([html](layout-swap.html)) | 탭과 옵션 자리 바꾸기: 탭을 재생 칸 맨 아랫줄로, 재생 모드·속도·수면 타이머를 위 머리줄로. ③은 새 버전 알림과 로고 메뉴 | 백업 |
 | [album-tab](album-tab.png) ([html](album-tab.html)) | 앨범 탭 첫 시안(표지 + 버튼, 탭 이름은 '작품'이던 때) | 반영됨 |
+| [transport-repeat](transport-repeat.png) | 재생 버튼 줄에 구간 반복: ⏮ 가사 반복 ⟲ ▶ ⟳ A-B ⏭. 위부터 평소 · A-B 시작 찍음 · A-B 반복 중 · 가사 반복 중. 시안 없이 코드로 만든 화면을 찍은 것이라 HTML은 없음 | 지금 쓰는 배치 |
 
 ## 예전 배치로 돌아가기
 
